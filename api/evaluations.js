@@ -19,7 +19,8 @@ export default async function handler(req, res) {
   // Diagnóstico e teste de conexão acessível pelo navegador via GET
   if (req.method === 'GET') {
     const webhookUrl = process.env.WEBHOOK_URL;
-    const webhookSecretConfigured = Boolean(process.env.EVALUATIONS_WEBHOOK_SECRET);
+    const webhookSecret = (process.env.EVALUATIONS_WEBHOOK_SECRET || '').trim().replace(/^["']|["']$/g, '');
+    const webhookSecretConfigured = Boolean(webhookSecret);
 
     if (!webhookUrl) {
       return res.status(200).json({
@@ -28,6 +29,63 @@ export default async function handler(req, res) {
         message: 'A variável WEBHOOK_URL não está configurada na Vercel (Project Settings > Environment Variables).',
         instruction: '1. No painel da Vercel, acesse Project Settings > Environment Variables. 2. Crie a chave WEBHOOK_URL com a URL da sua implantação do Apps Script (/exec). 3. Realize um Redeploy da aplicação na Vercel.'
       });
+    }
+
+    // Se solicitado teste ativo de inserção via GET (/api/evaluations?test=1)
+    const isTest = req.query && (req.query.test === '1' || req.query.test === 'true');
+    if (isTest) {
+      try {
+        const testPayload = {
+          evaluationId: 'teste_diagnostico_ping',
+          visitorId: 'diagnostico_sistema',
+          visitorName: 'Diagnóstico do Sistema',
+          roomId: 'f-05',
+          roomTitle: 'Engenheiro por um dia',
+          rating: 5,
+          ratingNumber: 5,
+          ratingLabel: 'Excelente',
+          displayRating: 'Excelente',
+          comment: 'Teste de diagnóstico automático via Vercel executado com sucesso!',
+          clientUpdatedAt: new Date().toISOString(),
+          secret: webhookSecret,
+        };
+
+        const testRes = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(webhookSecret ? { 'x-webhook-secret': webhookSecret } : {}),
+          },
+          body: JSON.stringify(testPayload),
+          redirect: 'follow',
+        });
+
+        const testText = await testRes.text().catch(() => '');
+        let testJson = null;
+        try {
+          testJson = JSON.parse(testText);
+        } catch {
+          // not json
+        }
+
+        const isSuccess = testRes.ok && (!testJson || testJson.success !== false);
+
+        return res.status(200).json({
+          testStatus: isSuccess ? 'success' : 'failed',
+          googleHttpStatus: testRes.status,
+          googleResponse: testJson || testText.substring(0, 300),
+          secretConfigured: webhookSecretConfigured,
+          message: isSuccess
+            ? 'Teste de gravação na planilha concluído com sucesso! Uma linha de teste foi gravada/atualizada na aba Avaliações.'
+            : 'O teste de gravação falhou. Verifique o retorno do Google Apps Script em "googleResponse".'
+        });
+      } catch (err) {
+        return res.status(200).json({
+          testStatus: 'error',
+          error: err.message,
+          message: 'Falha de rede ao tentar enviar teste de gravação para o Google Apps Script.'
+        });
+      }
     }
 
     try {
@@ -52,7 +110,8 @@ export default async function handler(req, res) {
         googleResponseBody: parsedJson || pingText.substring(0, 300),
         message: pingRes.ok
           ? 'Conexão com o Google Apps Script está ativa e respondendo com sucesso!'
-          : 'O Google Apps Script foi contatado, mas retornou status não-OK. Verifique se a implantação está configurada com: Quem tem acesso = Qualquer pessoa.'
+          : 'O Google Apps Script foi contatado, mas retornou status não-OK. Verifique se a implantação está configurada com: Quem tem acesso = Qualquer pessoa.',
+        testTip: 'Para testar uma gravação real de diagnóstico na planilha, acesse esta URL com ?test=1'
       });
     } catch (pingErr) {
       return res.status(200).json({
@@ -93,7 +152,6 @@ export default async function handler(req, res) {
       roomId,
       roomTitle,
       visitorName,
-      visitorEmail,
       visitorId,
       evaluationId,
       rating,
@@ -131,9 +189,6 @@ export default async function handler(req, res) {
     const cleanVisitorName = typeof visitorName === 'string' && visitorName.trim()
       ? visitorName.trim().substring(0, 100)
       : 'Visitante';
-    const cleanVisitorEmail = typeof visitorEmail === 'string' && visitorEmail.trim()
-      ? visitorEmail.trim().substring(0, 100)
-      : '';
     const cleanRoomTitle = typeof roomTitle === 'string' && roomTitle.trim()
       ? roomTitle.trim().substring(0, 150)
       : cleanRoomId;
@@ -151,12 +206,12 @@ export default async function handler(req, res) {
       evaluationId: cleanEvaluationId,
       visitorId: cleanVisitorId,
       visitorName: cleanVisitorName,
-      visitorEmail: cleanVisitorEmail,
       roomId: cleanRoomId,
       roomTitle: cleanRoomTitle,
-      rating: cleanRatingLabel,
+      rating: numRating,
       ratingNumber: numRating,
       ratingLabel: cleanRatingLabel,
+      displayRating: cleanRatingLabel,
       comment: cleanComment,
       clientUpdatedAt: cleanClientUpdatedAt,
       receivedAt: new Date().toISOString(),
@@ -164,16 +219,25 @@ export default async function handler(req, res) {
 
     // 4. Encaminhamento para o Google Apps Script (se WEBHOOK_URL configurado na Vercel)
     const webhookUrl = process.env.WEBHOOK_URL;
-    const webhookSecret = process.env.EVALUATIONS_WEBHOOK_SECRET || '';
+    const webhookSecret = (process.env.EVALUATIONS_WEBHOOK_SECRET || '').trim().replace(/^["']|["']$/g, '');
     let syncedToGoogleSheets = false;
     let syncWarning = null;
 
     if (webhookUrl) {
       const webhookPayload = {
-        ...evaluationRecord,
-        rating: cleanRatingLabel,
-        ratingLabel: cleanRatingLabel,
+        evaluationId: cleanEvaluationId,
+        visitorId: cleanVisitorId,
+        visitorName: cleanVisitorName,
+        roomId: cleanRoomId,
+        roomTitle: cleanRoomTitle,
+        rating: numRating, // Inteiro 1-5 garantindo compatibilidade reversa total com versões anteriores do Apps Script
         ratingNumber: numRating,
+        nota: numRating,
+        ratingLabel: cleanRatingLabel, // Texto ("Excelente", "Boa", "Regular", etc.)
+        displayRating: cleanRatingLabel,
+        comment: cleanComment,
+        clientUpdatedAt: cleanClientUpdatedAt,
+        receivedAt: new Date().toISOString(),
         secret: webhookSecret,
       };
 
@@ -192,10 +256,18 @@ export default async function handler(req, res) {
           redirect: 'follow',
         });
 
-        if (!webhookResponse.ok) {
-          const errorText = await webhookResponse.text().catch(() => '');
-          console.error(`Erro retornado pelo Google Apps Script (HTTP ${webhookResponse.status}):`, errorText);
-          syncWarning = `Google Apps Script retornou HTTP ${webhookResponse.status}: ${errorText.substring(0, 150)}`;
+        const resText = await webhookResponse.text().catch(() => '');
+        let gasData = null;
+        try {
+          gasData = JSON.parse(resText);
+        } catch {
+          // Resposta não-JSON
+        }
+
+        if (!webhookResponse.ok || (gasData && gasData.success === false)) {
+          const errMsg = (gasData && gasData.error) || resText.substring(0, 150) || `HTTP ${webhookResponse.status}`;
+          console.error('Erro retornado pelo Google Apps Script:', errMsg);
+          syncWarning = `Google Apps Script: ${errMsg}`;
         } else {
           syncedToGoogleSheets = true;
         }

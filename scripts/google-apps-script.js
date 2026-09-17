@@ -87,11 +87,16 @@ function doPost(e) {
 
     // 1. Validação do segredo compartilhado (se configurado nas Propriedades do Script)
     const scriptProperties = PropertiesService.getScriptProperties();
-    const expectedSecret = scriptProperties.getProperty('EVALUATIONS_WEBHOOK_SECRET');
-    if (expectedSecret) {
-      const providedSecret = payload.secret;
-      if (!providedSecret || providedSecret !== expectedSecret) {
-        return jsonResponse({ success: false, error: 'Acesso não autorizado: segredo incorreto.' }, 401);
+    const rawExpectedSecret = scriptProperties.getProperty('EVALUATIONS_WEBHOOK_SECRET');
+    if (rawExpectedSecret && rawExpectedSecret.trim() !== '') {
+      const expectedSecret = rawExpectedSecret.trim().replace(/^["']|["']$/g, '');
+      const providedSecret = String(payload.secret || (e.parameter && e.parameter.secret) || '').trim().replace(/^["']|["']$/g, '');
+      if (expectedSecret !== '' && providedSecret !== expectedSecret) {
+        return jsonResponse({
+          success: false,
+          error: 'Acesso não autorizado: segredo incorreto.',
+          hint: 'Se você não deseja utilizar segredo, execute a função removerSegredo() no editor do Apps Script.'
+        }, 401);
       }
     }
 
@@ -107,15 +112,20 @@ function doPost(e) {
     };
 
     let displayRating = '';
-    const rawRating = payload.ratingLabel || payload.rating || '';
-    if (rawRating && isNaN(Number(rawRating))) {
+    const rawLabel = String(payload.ratingLabel || payload.displayRating || '').trim();
+    const rawRating = payload.rating;
+    const rawRatingNumber = payload.ratingNumber;
+
+    if (rawLabel) {
+      displayRating = rawLabel;
+    } else if (rawRating && isNaN(Number(rawRating))) {
       displayRating = String(rawRating).trim();
-    } else if (payload.ratingNumber && RATING_LABELS[Number(payload.ratingNumber)]) {
-      displayRating = RATING_LABELS[Number(payload.ratingNumber)];
-    } else if (RATING_LABELS[Number(rawRating)]) {
+    } else if (rawRating && RATING_LABELS[Number(rawRating)]) {
       displayRating = RATING_LABELS[Number(rawRating)];
+    } else if (rawRatingNumber && RATING_LABELS[Number(rawRatingNumber)]) {
+      displayRating = RATING_LABELS[Number(rawRatingNumber)];
     } else {
-      displayRating = String(rawRating).trim();
+      displayRating = 'Boa';
     }
 
     if (!roomId || !displayRating) {
@@ -200,10 +210,32 @@ function doPost(e) {
  * Endpoint de teste simples via GET no navegador
  */
 function doGet(e) {
+  let spreadsheetOk = false;
+  let spreadsheetName = '';
+  let sheetFound = false;
+  let errorMsg = null;
+
+  try {
+    const ss = getSpreadsheet();
+    if (ss) {
+      spreadsheetOk = true;
+      spreadsheetName = ss.getName();
+      const sheet = getOrCreateSheet(ss);
+      if (sheet) {
+        sheetFound = true;
+      }
+    }
+  } catch (err) {
+    errorMsg = err.message || err.toString();
+  }
+
   return jsonResponse({
-    status: 'online',
+    status: spreadsheetOk ? 'online' : 'spreadsheet_error',
     service: 'Mostra STEAM 2026 - Endpoint de Avaliações',
     sheet: SHEET_NAME,
+    spreadsheetName: spreadsheetName || undefined,
+    sheetReady: sheetFound,
+    spreadsheetError: errorMsg || undefined,
     timestamp: new Date().toISOString()
   }, 200);
 }
@@ -363,5 +395,16 @@ function testarInsercaoAvaliacao() {
  */
 function removerSegredo() {
   PropertiesService.getScriptProperties().deleteProperty('EVALUATIONS_WEBHOOK_SECRET');
-  Logger.log('Segredo removido com sucesso! Agora o Apps Script aceitará os envios da Vercel normalmente.');
+  Logger.log('Segredo removido com sucesso! Agora o Apps Script aceitará os envios da Vercel normalmente sem travas.');
+}
+
+/**
+ * Função utilitária para definir ou atualizar o segredo nas Propriedades do Script
+ */
+function definirSegredo(novoSegredo) {
+  if (!novoSegredo) {
+    throw new Error('Informe o novo segredo.');
+  }
+  PropertiesService.getScriptProperties().setProperty('EVALUATIONS_WEBHOOK_SECRET', String(novoSegredo).trim());
+  Logger.log('Segredo atualizado com sucesso para: ' + String(novoSegredo).trim());
 }
