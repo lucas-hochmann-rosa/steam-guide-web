@@ -328,9 +328,14 @@ export async function syncEvaluationRemote(evaluation) {
     });
 
     if (response.ok) {
-      const targetId = evaluation.evaluationId || evaluation.id || `${evaluation.visitorId}_${evaluation.roomId}`;
-      markEvaluationSynced(targetId);
-      return await response.json().catch(() => ({ success: true }));
+      const data = await response.json().catch(() => ({ success: true }));
+      if (data && data.syncedToGoogleSheets !== false) {
+        const targetId = evaluation.evaluationId || evaluation.id || `${evaluation.visitorId}_${evaluation.roomId}`;
+        markEvaluationSynced(targetId);
+      } else if (data && data.warning) {
+        console.warn('Sincronização remota com a planilha pendente:', data.warning);
+      }
+      return data;
     }
   } catch (err) {
     console.warn('Falha na sincronização remota, registro mantido como pendente:', err);

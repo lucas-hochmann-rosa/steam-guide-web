@@ -18,6 +18,53 @@ const HEADERS = [
   'Comentário'
 ];
 
+// Se você criou o script pelo menu 'Extensões > Apps Script' da planilha, deixe vazio ''.
+// Se você criou o script avulso no Google Drive, cole aqui o ID da planilha (o código longo entre /d/ e /edit):
+const SPREADSHEET_ID = '';
+
+function getSpreadsheet() {
+  let ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss && SPREADSHEET_ID) {
+    try {
+      ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    } catch (e) {
+      throw new Error('Falha ao abrir planilha pelo SPREADSHEET_ID: ' + e.message);
+    }
+  }
+  if (!ss) {
+    const propId = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
+    if (propId) {
+      try {
+        ss = SpreadsheetApp.openById(propId);
+      } catch (e) {}
+    }
+  }
+  if (!ss) {
+    throw new Error('Planilha não encontrada! Abra sua planilha do Google e clique em "Extensões > Apps Script" para vincular o script, ou preencha a constante SPREADSHEET_ID no topo deste código.');
+  }
+  return ss;
+}
+
+function getOrCreateSheet(ss) {
+  let sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) {
+    const all = ss.getSheets();
+    sheet = all.find(s => {
+      const name = s.getName().toLowerCase().trim();
+      return name === 'avaliacoes' || name === 'avaliações';
+    });
+  }
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEET_NAME);
+    sheet.appendRow(HEADERS);
+    formatHeaderRow(sheet);
+  } else if (sheet.getLastRow() === 0) {
+    sheet.appendRow(HEADERS);
+    formatHeaderRow(sheet);
+  }
+  return sheet;
+}
+
 /**
  * Ponto de entrada para requisições POST enviadas pela Vercel
  */
@@ -86,17 +133,8 @@ function doPost(e) {
     const formattedDate = Utilities.formatDate(now, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm:ss');
 
     // 3. Localizar ou inicializar a aba 'Avaliações'
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    let sheet = ss.getSheetByName(SHEET_NAME);
-
-    if (!sheet) {
-      sheet = ss.insertSheet(SHEET_NAME);
-      sheet.appendRow(HEADERS);
-      formatHeaderRow(sheet);
-    } else if (sheet.getLastRow() === 0) {
-      sheet.appendRow(HEADERS);
-      formatHeaderRow(sheet);
-    }
+    const ss = getSpreadsheet();
+    const sheet = getOrCreateSheet(ss);
 
     // 4. Verificar se a avaliação já existe (pelo evaluationId na Coluna A)
     const data = sheet.getDataRange().getValues();
@@ -288,4 +326,28 @@ function criarAbaResultados() {
   sheetResultados.insertChart(chartSalas);
 
   sheetResultados.autoResizeColumns(1, 3);
+}
+
+/**
+ * Função de teste direto com 1 clique dentro do editor do Google Apps Script!
+ * Selecione 'testarInsercaoAvaliacao' no menu suspenso acima e clique em 'Executar'.
+ */
+function testarInsercaoAvaliacao() {
+  const fakeEvent = {
+    postData: {
+      contents: JSON.stringify({
+        evaluationId: 'teste_diagnostico_f-05',
+        visitorId: 'visitante_teste',
+        visitorName: 'Visitante Teste',
+        roomId: 'f-05',
+        roomTitle: 'Engenheiro por um dia',
+        rating: 'Excelente',
+        ratingLabel: 'Excelente',
+        ratingNumber: 5,
+        comment: 'Teste direto no Apps Script executado com sucesso!'
+      })
+    }
+  };
+  const resposta = doPost(fakeEvent);
+  Logger.log('Resultado do teste: ' + resposta.getContent());
 }

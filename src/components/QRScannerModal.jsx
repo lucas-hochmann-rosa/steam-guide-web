@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { rooms } from '../data/rooms';
 import { resolveRoomId } from '../utils/resolveRoom';
 
@@ -7,10 +7,6 @@ export default function QRScannerModal({ isOpen, onClose, onDetected }) {
   const streamRef = useRef(null);
   const timerRef = useRef(null);
   const [error, setError] = useState('');
-  const [cameras, setCameras] = useState([]);
-  const [activeDeviceId, setActiveDeviceId] = useState(null);
-  const [zoomLevel, setZoomLevel] = useState(1);
-  const [zoomCapabilities, setZoomCapabilities] = useState(null);
 
   const stopStream = useCallback(() => {
     if (streamRef.current) {
@@ -76,87 +72,42 @@ export default function QRScannerModal({ isOpen, onClose, onDetected }) {
     return preferred || null;
   };
 
-  const applyZoom = async (track, target) => {
-    const caps = track.getCapabilities?.();
-    if (!caps?.zoom) return;
-    const minZ = caps.zoom.min || 1;
-    const maxZ = caps.zoom.max || 1;
-    const clamped = Math.min(Math.max(target, minZ), maxZ);
-    try {
-      await track.applyConstraints({ advanced: [{ zoom: clamped }] });
-      setZoomLevel(clamped);
-    } catch {
-      try {
-        await track.applyConstraints({ zoom: clamped });
-        setZoomLevel(clamped);
-      } catch {}
-    }
-  };
-
-  const startScanner = async (requestedDeviceId = null) => {
+  const startScanner = async () => {
     stopStream();
     setError('');
 
     try {
-      const initialConstraints = {
-        video: requestedDeviceId
-          ? { deviceId: { exact: requestedDeviceId } }
-          : { facingMode: { ideal: 'environment' } },
+      let stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' } },
         audio: false,
-      };
-
-      let stream = await navigator.mediaDevices.getUserMedia(initialConstraints);
+      });
       streamRef.current = stream;
 
-      // Agora com permissão concedida, enumeramos os dispositivos reais
+      // Com permissão concedida, checa se a câmera inicial foi a 0.5x ultra-wide e seleciona a 1x principal
       const allDevices = await navigator.mediaDevices.enumerateDevices().catch(() => []);
       const videoDevices = allDevices.filter((d) => d.kind === 'videoinput');
-      const backDevices = videoDevices.filter((d) => {
-        const l = (d.label || '').toLowerCase();
-        return !l.includes('front') && !l.includes('frontal') && !l.includes('user') && !l.includes('selfie');
-      });
 
-      setCameras(backDevices.length > 0 ? backDevices : videoDevices);
-
-      // Se nenhum deviceId foi pedido expressamente, avalia se a câmera aberta é a 0.5x
-      if (!requestedDeviceId && videoDevices.length > 1) {
+      if (videoDevices.length > 1) {
         const currentTrack = stream.getVideoTracks()[0];
-        const currentLabel = (currentTrack.label || '').toLowerCase();
+        const currentLabel = (currentTrack?.label || '').toLowerCase();
         const best = selectBestCamera(allDevices);
 
         if (best && best.deviceId) {
-          const currentSettings = currentTrack.getSettings?.() || {};
           const isCurrentUltra =
             currentLabel.includes('ultra') ||
             currentLabel.includes('0.5') ||
             currentLabel.includes('0,5') ||
             currentLabel.includes('0.6');
 
-          if (isCurrentUltra || (currentSettings.deviceId && currentSettings.deviceId !== best.deviceId)) {
-            // Fecha o stream 0.5x e abre a câmera 1x principal
+          if (isCurrentUltra) {
             stream.getTracks().forEach((t) => t.stop());
             stream = await navigator.mediaDevices.getUserMedia({
               video: { deviceId: { exact: best.deviceId } },
               audio: false,
             });
             streamRef.current = stream;
-            setActiveDeviceId(best.deviceId);
-          } else {
-            setActiveDeviceId(currentSettings.deviceId || best.deviceId);
           }
         }
-      } else if (requestedDeviceId) {
-        setActiveDeviceId(requestedDeviceId);
-      }
-
-      const activeTrack = streamRef.current.getVideoTracks()[0];
-      const caps = activeTrack.getCapabilities?.();
-      if (caps?.zoom) {
-        setZoomCapabilities(caps.zoom);
-        // Garante zoom de pelo menos 1x caso o sensor inicialize em 0.5x
-        await applyZoom(activeTrack, Math.max(1.0, caps.zoom.min || 1.0));
-      } else {
-        setZoomCapabilities(null);
       }
 
       await new Promise((resolve) => window.setTimeout(resolve, 80));
@@ -190,24 +141,6 @@ export default function QRScannerModal({ isOpen, onClose, onDetected }) {
     }
   };
 
-  const handleToggleZoom = () => {
-    if (!streamRef.current || !zoomCapabilities) return;
-    const track = streamRef.current.getVideoTracks()[0];
-    if (!track) return;
-    const nextZoom = zoomLevel >= 1.8 ? 1.0 : 2.0;
-    applyZoom(track, nextZoom);
-  };
-
-  const handleSwitchCamera = () => {
-    if (cameras.length <= 1) return;
-    const currentIndex = cameras.findIndex((c) => c.deviceId === activeDeviceId);
-    const nextIndex = (currentIndex + 1) % cameras.length;
-    const nextDevice = cameras[nextIndex];
-    if (nextDevice) {
-      startScanner(nextDevice.deviceId);
-    }
-  };
-
   useEffect(() => {
     if (isOpen) {
       startScanner();
@@ -232,10 +165,7 @@ export default function QRScannerModal({ isOpen, onClose, onDetected }) {
     >
       <div className="scanner-sheet" onClick={(e) => e.stopPropagation()}>
         <div className="scanner-head">
-          <div>
-            <h2>Ler QR Code da Sala</h2>
-            <p className="scanner-hint">Aponte a câmera (1x) para o cartaz do espaço.</p>
-          </div>
+          <h2>Ler QR Code da Sala</h2>
           <button
             onClick={() => {
               stopStream();
@@ -252,34 +182,10 @@ export default function QRScannerModal({ isOpen, onClose, onDetected }) {
           <div className="scan-corners" />
         </div>
 
-        <div className="scanner-controls">
-          {cameras.length > 1 && (
-            <button
-              type="button"
-              className="scanner-control-btn"
-              onClick={handleSwitchCamera}
-              title="Alternar entre câmeras traseiras disponíveis"
-            >
-              🔄 Alternar câmera
-            </button>
-          )}
-
-          {zoomCapabilities && (zoomCapabilities.max || 1) >= 1.8 && (
-            <button
-              type="button"
-              className="scanner-control-btn"
-              onClick={handleToggleZoom}
-              title="Ajustar zoom"
-            >
-              🔍 Zoom {zoomLevel >= 1.8 ? '2x' : '1x'}
-            </button>
-          )}
-        </div>
-
         {error && (
           <div className="scanner-error">
             <p>{error}</p>
-            <button onClick={() => startScanner(activeDeviceId)}>Tentar novamente</button>
+            <button onClick={startScanner}>Tentar novamente</button>
           </div>
         )}
       </div>

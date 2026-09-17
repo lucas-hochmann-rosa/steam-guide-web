@@ -16,8 +16,57 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
+  // Diagnóstico e teste de conexão acessível pelo navegador via GET
+  if (req.method === 'GET') {
+    const webhookUrl = process.env.WEBHOOK_URL;
+    const webhookSecretConfigured = Boolean(process.env.EVALUATIONS_WEBHOOK_SECRET);
+
+    if (!webhookUrl) {
+      return res.status(200).json({
+        status: 'warning',
+        webhookConfigured: false,
+        message: 'A variável WEBHOOK_URL não está configurada na Vercel (Project Settings > Environment Variables).',
+        instruction: '1. No painel da Vercel, acesse Project Settings > Environment Variables. 2. Crie a chave WEBHOOK_URL com a URL da sua implantação do Apps Script (/exec). 3. Realize um Redeploy da aplicação na Vercel.'
+      });
+    }
+
+    try {
+      const pingRes = await fetch(webhookUrl, {
+        method: 'GET',
+        redirect: 'follow',
+      });
+      const pingText = await pingRes.text().catch(() => '');
+      let parsedJson = null;
+      try {
+        parsedJson = JSON.parse(pingText);
+      } catch {
+        // Resposta em texto/HTML
+      }
+
+      return res.status(200).json({
+        status: pingRes.ok ? 'connected' : 'google_error',
+        webhookConfigured: true,
+        webhookUrlMasked: webhookUrl.replace(/\/s\/[^/]+/, '/s/AKfy...'),
+        webhookSecretConfigured,
+        googleHttpStatus: pingRes.status,
+        googleResponseBody: parsedJson || pingText.substring(0, 300),
+        message: pingRes.ok
+          ? 'Conexão com o Google Apps Script está ativa e respondendo com sucesso!'
+          : 'O Google Apps Script foi contatado, mas retornou status não-OK. Verifique se a implantação está configurada com: Quem tem acesso = Qualquer pessoa.'
+      });
+    } catch (pingErr) {
+      return res.status(200).json({
+        status: 'connection_failed',
+        webhookConfigured: true,
+        webhookUrlMasked: webhookUrl.replace(/\/s\/[^/]+/, '/s/AKfy...'),
+        error: pingErr.message,
+        message: 'Não foi possível conectar ao Google Apps Script. Verifique se a URL da implantação está correta.'
+      });
+    }
+  }
+
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Método não permitido. Utilize POST.' });
+    return res.status(405).json({ error: 'Método não permitido. Utilize POST ou GET (diagnóstico).' });
   }
 
   try {
@@ -29,7 +78,17 @@ export default async function handler(req, res) {
       5: 'Excelente',
     };
 
-    const body = req.body || {};
+    let body = req.body;
+    if (typeof body === 'string') {
+      try {
+        body = JSON.parse(body);
+      } catch {
+        body = {};
+      }
+    } else if (!body) {
+      body = {};
+    }
+
     const {
       roomId,
       roomTitle,
@@ -106,6 +165,8 @@ export default async function handler(req, res) {
     // 4. Encaminhamento para o Google Apps Script (se WEBHOOK_URL configurado na Vercel)
     const webhookUrl = process.env.WEBHOOK_URL;
     const webhookSecret = process.env.EVALUATIONS_WEBHOOK_SECRET || '';
+    let syncedToGoogleSheets = false;
+    let syncWarning = null;
 
     if (webhookUrl) {
       const webhookPayload = {
@@ -134,26 +195,26 @@ export default async function handler(req, res) {
         if (!webhookResponse.ok) {
           const errorText = await webhookResponse.text().catch(() => '');
           console.error(`Erro retornado pelo Google Apps Script (HTTP ${webhookResponse.status}):`, errorText);
-          return res.status(502).json({
-            error: 'Falha ao sincronizar com a planilha central.',
-            status: webhookResponse.status,
-            details: errorText,
-          });
+          syncWarning = `Google Apps Script retornou HTTP ${webhookResponse.status}: ${errorText.substring(0, 150)}`;
+        } else {
+          syncedToGoogleSheets = true;
         }
       } catch (webhookErr) {
         console.error('Falha de conexão com o webhook do Google Apps Script:', webhookErr);
-        return res.status(502).json({
-          error: 'Erro de conexão ao contatar a planilha central.',
-          details: webhookErr.message,
-        });
+        syncWarning = `Falha de conexão com o Apps Script: ${webhookErr.message}`;
       }
     } else {
-      console.warn('Variável de ambiente WEBHOOK_URL não configurada.');
+      syncWarning = 'A variável de ambiente WEBHOOK_URL não está configurada no painel da Vercel (Project Settings > Environment Variables).';
+      console.warn(syncWarning);
     }
 
     return res.status(200).json({
       success: true,
-      message: 'Avaliação processada com sucesso.',
+      syncedToGoogleSheets,
+      warning: syncWarning || undefined,
+      message: syncedToGoogleSheets
+        ? 'Avaliação registrada e sincronizada com a planilha com sucesso.'
+        : 'Avaliação recebida pelo servidor, mas pendente de envio para a planilha: ' + syncWarning,
       data: evaluationRecord,
     });
   } catch (err) {
