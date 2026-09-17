@@ -142,9 +142,8 @@ steam-guide-web/
 | `src/data/team.js` | Dados biográficos e áreas de atuação da equipe pedagógica. |
 | `api/evaluations.js` | Serverless Function para deploy e sincronização na Vercel. |
 | `public/` | Imagens, ícones PWA e Service Worker servidos diretamente. |
-| `vite.config.js` | Configuração do Vite, incluindo base automática para GitHub Pages. |
+| `vite.config.js` | Configuração do Vite para desenvolvimento e build de produção. |
 | `vercel.json` | Configuração de build e saída para deploy na Vercel. |
-| `.github/workflows/deploy-pages.yml` | Publicação automática no GitHub Pages a partir da branch `main`. |
 
 ---
 
@@ -235,18 +234,6 @@ O arquivo `vercel.json` já define:
 | Comando de build | `npm run build` |
 | Diretório de saída | `dist` |
 | Framework | `vite` |
-
-### GitHub Pages
-
-O workflow `.github/workflows/deploy-pages.yml` publica a pasta `dist` quando houver push na branch `main`.
-
-Endereço esperado após o deploy:
-
-```text
-https://lucas-hochmann-rosa.github.io/steam-guide-web/
-```
-
-No GitHub, a página deve usar **GitHub Actions** como origem do Pages.
 
 ---
 

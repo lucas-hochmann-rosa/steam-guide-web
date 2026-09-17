@@ -14,7 +14,6 @@
     "build": "vite build",
     "start": "vite preview",
     "preview": "vite preview",
-    "preview:pages": "vite build --base=/steam-guide-web/ && vite preview",
     "lint": "eslint ."
   },
   "dependencies": {
