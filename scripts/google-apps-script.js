@@ -14,7 +14,7 @@ const HEADERS = [
   'Nome do visitante',
   'ID da sala',
   'Sala / Espaço',
-  'Nota',
+  'Avaliação',
   'Comentário'
 ];
 

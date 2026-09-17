@@ -138,17 +138,9 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleSaveVisitorName = (nameOrObj, maybeEmail) => {
-    let name = '';
-    let email = '';
-    if (typeof nameOrObj === 'object' && nameOrObj !== null) {
-      name = nameOrObj.name || '';
-      email = nameOrObj.email || '';
-    } else {
-      name = String(nameOrObj || '');
-      email = String(maybeEmail || '');
-    }
-    const profile = setVisitorProfile(name, email);
+  const handleSaveVisitorName = (name) => {
+    const raw = typeof name === 'string' ? name : (name?.name || 'Visitante');
+    const profile = setVisitorProfile(raw);
     setVisitorNameState(profile.name);
     setWelcomeOpen(false);
   };
@@ -798,13 +790,6 @@ export default function App() {
 
             <section className="info-grid">
               <article>
-                <InfoIcon type="date" />
-                <div>
-                  <b>Data</b>
-                  <p>18 e 19 de setembro de 2026</p>
-                </div>
-              </article>
-              <article>
                 <InfoIcon type="team" />
                 <div>
                   <b>Realização</b>
@@ -882,8 +867,23 @@ export default function App() {
                     href="https://www.instagram.com/west.sharks.robotica/"
                     target="_blank"
                     rel="noreferrer"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
                   >
-                    Instagram ↗
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      style={{ width: '18px', height: '18px', flexShrink: 0 }}
+                      aria-hidden="true"
+                    >
+                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                    </svg>
+                    <span>Instagram ↗</span>
                   </a>
                 </div>
               </div>

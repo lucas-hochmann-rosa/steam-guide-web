@@ -2,14 +2,13 @@ import React, { useState } from 'react';
 import { assetPath } from '../utils/assetPath';
 
 export default function WelcomeModal({ onSaveName }) {
-  const [nameDraft, setNameDraft] = useState('');
-  const [emailDraft, setEmailDraft] = useState('');
+  const [draft, setDraft] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const name = nameDraft.trim();
+    const name = draft.trim();
     if (!name) return;
-    onSaveName({ name, email: emailDraft.trim() });
+    onSaveName(name);
   };
 
   return (
@@ -18,7 +17,7 @@ export default function WelcomeModal({ onSaveName }) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="welcome-title"
-      onClick={() => onSaveName({ name: nameDraft.trim() || 'Visitante', email: emailDraft.trim() })}
+      onClick={() => onSaveName(draft.trim() || 'Visitante')}
     >
       <section className="welcome-card" onClick={(e) => e.stopPropagation()}>
         <div className="welcome-brands">
@@ -42,26 +41,13 @@ export default function WelcomeModal({ onSaveName }) {
           <label htmlFor="visitor-name">Como podemos chamar você?</label>
           <input
             id="visitor-name"
-            value={nameDraft}
-            onChange={(event) => setNameDraft(event.target.value)}
-            placeholder="Digite seu nome ou apelido *"
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            placeholder="Digite seu nome ou apelido"
             autoComplete="nickname"
             autoFocus
           />
-
-          <label htmlFor="visitor-email" style={{ marginTop: '12px' }}>
-            Seu e-mail <small style={{ fontWeight: 'normal', color: '#68787a' }}>(opcional, para identificação)</small>
-          </label>
-          <input
-            id="visitor-email"
-            type="email"
-            value={emailDraft}
-            onChange={(event) => setEmailDraft(event.target.value)}
-            placeholder="seuemail@exemplo.com"
-            autoComplete="email"
-          />
-
-          <button type="submit" disabled={!nameDraft.trim()}>
+          <button type="submit" disabled={!draft.trim()}>
             Entrar na Mostra
           </button>
         </form>

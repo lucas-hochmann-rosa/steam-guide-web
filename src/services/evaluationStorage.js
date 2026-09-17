@@ -1,7 +1,6 @@
 const STORAGE_KEYS = {
   VERSION: 'steam-storage-version',
   VISITOR_NAME: 'steam-visitor-name',
-  VISITOR_EMAIL: 'steam-visitor-email',
   VISITOR_ID: 'steam-visitor-id',
   VISITED: 'steam-visitados',
   RATINGS: 'steam-avaliacoes',
@@ -55,17 +54,7 @@ export function getVisitorName() {
   return localStorage.getItem(STORAGE_KEYS.VISITOR_NAME) || '';
 }
 
-export function getVisitorEmail() {
-  if (typeof window === 'undefined') return '';
-  return localStorage.getItem(STORAGE_KEYS.VISITOR_EMAIL) || '';
-}
-
-export function generateCleanVisitorId(name, email) {
-  const cleanEmail = (email || '').trim().toLowerCase();
-  if (cleanEmail && cleanEmail.includes('@')) {
-    return cleanEmail;
-  }
-
+export function generateCleanVisitorId(name) {
   const cleanName = (name || 'visitante')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -78,43 +67,29 @@ export function generateCleanVisitorId(name, email) {
   return `${cleanName}_${suffix}`;
 }
 
-export function setVisitorProfile(name, email = '') {
-  if (typeof window === 'undefined') return { name: '', email: '', id: '' };
+export function setVisitorProfile(name) {
+  if (typeof window === 'undefined') return { name: '', id: '' };
   const trimmedName = (name || '').trim();
-  const trimmedEmail = (email || '').trim().toLowerCase();
 
   localStorage.setItem(STORAGE_KEYS.VISITOR_NAME, trimmedName);
-  if (trimmedEmail) {
-    localStorage.setItem(STORAGE_KEYS.VISITOR_EMAIL, trimmedEmail);
-  }
-
-  const cleanId = generateCleanVisitorId(trimmedName, trimmedEmail);
+  const cleanId = generateCleanVisitorId(trimmedName);
   localStorage.setItem(STORAGE_KEYS.VISITOR_ID, cleanId);
 
-  return { name: trimmedName, email: trimmedEmail, id: cleanId };
+  return { name: trimmedName, id: cleanId };
 }
 
 export function setVisitorName(name) {
-  return setVisitorProfile(name, getVisitorEmail()).name;
+  return setVisitorProfile(name).name;
 }
 
 export function getVisitorId() {
   if (typeof window === 'undefined') return 'visitante_server';
   try {
     let id = localStorage.getItem(STORAGE_KEYS.VISITOR_ID);
-    const email = getVisitorEmail();
     const name = getVisitorName();
 
-    // Se tiver e-mail e o ID ainda for o hash antigo v_..., migra para o e-mail
-    if (email && (!id || id.startsWith('v_'))) {
-      id = email;
-      localStorage.setItem(STORAGE_KEYS.VISITOR_ID, id);
-      return id;
-    }
-
-    // Se não tiver ID ou se o ID for o formato antigo v_..., migra para um ID amigável com o nome
     if (!id || id.startsWith('v_')) {
-      id = generateCleanVisitorId(name, email);
+      id = generateCleanVisitorId(name);
       localStorage.setItem(STORAGE_KEYS.VISITOR_ID, id);
     }
     return id;
@@ -165,7 +140,6 @@ export function saveRoomEvaluation({ roomId, roomTitle, rating, comment, visitor
   if (typeof window === 'undefined') return null;
 
   const currentVisitor = visitorName || getVisitorName() || 'Visitante';
-  const visitorEmail = getVisitorEmail();
   const visitorId = getVisitorId();
   const evaluationId = `${visitorId}_${roomId}`;
   const evaluations = getAllEvaluations();
@@ -184,7 +158,6 @@ export function saveRoomEvaluation({ roomId, roomTitle, rating, comment, visitor
     roomId,
     roomTitle: roomTitle || roomId,
     visitorName: currentVisitor,
-    visitorEmail,
     rating: Number(rating),
     ratingLabel,
     comment: (comment || '').trim(),
