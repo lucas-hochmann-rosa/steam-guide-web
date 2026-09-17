@@ -9,6 +9,7 @@ import QRScannerModal from './components/QRScannerModal';
 import RoomDetailModal from './components/RoomDetailModal';
 import { rooms, schoolBlocks, blockHotspots, guideTeam, roomLocation } from './data/rooms';
 import { team } from './data/team';
+import { resolveRoomId } from './utils/resolveRoom';
 import {
   initializeStorage,
   getVisitorName,
@@ -106,10 +107,10 @@ export default function App() {
     setComments(loadedComments);
 
     const params = new URLSearchParams(window.location.search);
-    const qrLocation = params.get('local');
-    if (qrLocation && rooms.some((r) => r.id === qrLocation.toLowerCase())) {
-      const match = qrLocation.toLowerCase();
-      setCurrentVisit(match);
+    const qrLocation = params.get('local') || params.get('sala') || params.get('room') || params.get('id');
+    const matchedRoom = qrLocation ? resolveRoomId(qrLocation, rooms) : null;
+    if (matchedRoom) {
+      setCurrentVisit(matchedRoom);
       setView('programacao');
     } else if (!storedName) {
       setWelcomeOpen(true);
@@ -145,7 +146,8 @@ export default function App() {
     setWelcomeOpen(false);
   };
 
-  const handleOpenRoom = (roomId) => {
+  const handleOpenRoom = (roomIdOrText) => {
+    const roomId = resolveRoomId(roomIdOrText, rooms) || (typeof roomIdOrText === 'string' ? roomIdOrText.toLowerCase() : roomIdOrText);
     if (!rooms.some((r) => r.id === roomId)) return;
     setGalleryIndex(0);
     setCurrentVisit(roomId);

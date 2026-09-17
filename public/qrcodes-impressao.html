@@ -1,0 +1,323 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR Codes para Impressão - Mostra STEAM 2026</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+    body { background: #f0f4f8; color: #102A43; padding: 24px; }
+    .toolbar {
+      max-width: 900px;
+      margin: 0 auto 24px;
+      background: #ffffff;
+      padding: 16px 24px;
+      border-radius: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 14px rgba(16, 42, 67, 0.08);
+    }
+    .toolbar h1 { font-size: 20px; color: #0754A6; }
+    .toolbar p { font-size: 13px; color: #627D98; margin-top: 4px; }
+    .btn-print {
+      background: #227C47;
+      color: #fff;
+      border: 0;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .btn-print:hover { background: #1B6338; }
+    .cards-grid {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .qr-card {
+      background: #ffffff;
+      border: 3px solid #0754A6;
+      border-radius: 20px;
+      padding: 24px 20px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      page-break-inside: avoid;
+      box-shadow: 0 6px 20px rgba(16, 42, 67, 0.06);
+    }
+    .card-brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #0754A6;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .room-badge {
+      display: inline-block;
+      background: #0754A6;
+      color: #ffffff;
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
+    }
+    .room-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #102A43;
+      margin-bottom: 6px;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.25;
+    }
+    .room-block {
+      font-size: 12px;
+      color: #627D98;
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+    .qr-img-wrapper {
+      width: 220px;
+      height: 220px;
+      background: #ffffff;
+      border: 2px solid #D9E2EC;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      margin-bottom: 14px;
+    }
+    .qr-img-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .scan-hint {
+      font-size: 12px;
+      color: #334E68;
+      font-weight: 700;
+      line-height: 1.35;
+      max-width: 280px;
+      margin-bottom: 8px;
+    }
+    .scan-hint span {
+      display: block;
+      color: #227C47;
+      font-size: 11px;
+      font-weight: 800;
+      margin-top: 3px;
+    }
+    .card-footer {
+      font-size: 10px;
+      color: #829AB1;
+      border-top: 1px dashed #D9E2EC;
+      padding-top: 8px;
+      width: 100%;
+    }
+    @media print {
+      body { background: #ffffff; padding: 0; }
+      .toolbar { display: none !important; }
+      .cards-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        max-width: 100%;
+      }
+      .qr-card {
+        border: 2px solid #0754A6;
+        box-shadow: none;
+        page-break-inside: avoid;
+        break-inside: avoid;
+        margin-bottom: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <div>
+      <h1>Cartazes com QR Code - Mostra STEAM 2026</h1>
+      <p>Escola SESI SENAI Chapecó • 10 Espaços Oficiais</p>
+    </div>
+    <button class="btn-print" onclick="window.print()">🖨️ Imprimir Cartazes (Ctrl + P)</button>
+  </div>
+
+  <div class="cards-grid">
+    <!-- Sala A-19 -->
+    <div class="qr-card">
+      <div class="card-brand">Escola SESI • Mostra STEAM 2026</div>
+      <div class="room-badge">SALA A-19</div>
+      <div class="room-title">O Caminho dos Direitos</div>
+      <div class="room-block">Bloco A • Entrada Principal</div>
+      <div class="qr-img-wrapper">
+        <img src="/assets/qrcodes/qr-a-19.png" alt="QR Code Sala A-19" />
+      </div>
+      <div class="scan-hint">
+        Aponte a câmera do seu celular para este código
+        <span>Conheça a sala e registre sua avaliação</span>
+      </div>
+      <div class="card-footer">steam-guide-web.vercel.app/?local=a-19</div>
+    </div>
+
+    <!-- Sala F-20 -->
+    <div class="qr-card">
+      <div class="card-brand">Escola SESI • Mostra STEAM 2026</div>
+      <div class="room-badge">SALA F-20</div>
+      <div class="room-title">Atividades De física</div>
+      <div class="room-block">Bloco F • 2º andar</div>
+      <div class="qr-img-wrapper">
+        <img src="/assets/qrcodes/qr-f-20.png" alt="QR Code Sala F-20" />
+      </div>
+      <div class="scan-hint">
+        Aponte a câmera do seu celular para este código
+        <span>Conheça a sala e registre sua avaliação</span>
+      </div>
+      <div class="card-footer">steam-guide-web.vercel.app/?local=f-20</div>
+    </div>
+
+    <!-- Sala F-08 -->
+    <div class="qr-card">
+      <div class="card-brand">Escola SESI • Mostra STEAM 2026</div>
+      <div class="room-badge">SALA F-08</div>
+      <div class="room-title">Galeria de arte</div>
+      <div class="room-block">Bloco F • 1º andar</div>
+      <div class="qr-img-wrapper">
+        <img src="/assets/qrcodes/qr-f-08.png" alt="QR Code Sala F-08" />
+      </div>
+      <div class="scan-hint">
+        Aponte a câmera do seu celular para este código
+        <span>Conheça a sala e registre sua avaliação</span>
+      </div>
+      <div class="card-footer">steam-guide-web.vercel.app/?local=f-08</div>
+    </div>
+
+    <!-- Sala F-13 -->
+    <div class="qr-card">
+      <div class="card-brand">Escola SESI • Mostra STEAM 2026</div>
+      <div class="room-badge">SALA F-13</div>
+      <div class="room-title">Globalização em Arte: Arte, Geografia e Inglês</div>
+      <div class="room-block">Bloco F • 1º andar</div>
+      <div class="qr-img-wrapper">
+        <img src="/assets/qrcodes/qr-f-13.png" alt="QR Code Sala F-13" />
+      </div>
+      <div class="scan-hint">
+        Aponte a câmera do seu celular para este código
+        <span>Conheça a sala e registre sua avaliação</span>
+      </div>
+      <div class="card-footer">steam-guide-web.vercel.app/?local=f-13</div>
+    </div>
+
+    <!-- Salas F-01, F-02 e F-03 -->
+    <div class="qr-card">
+      <div class="card-brand">Escola SESI • Mostra STEAM 2026</div>
+      <div class="room-badge">SALAS F-01, F-02 e F-03</div>
+      <div class="room-title">Jogos, desafios, charadas e enigmas matemáticos</div>
+      <div class="room-block">Bloco F • Térreo</div>
+      <div class="qr-img-wrapper">
+        <img src="/assets/qrcodes/qr-f-01-f-02.png" alt="QR Code Salas F-01, F-02 e F-03" />
+      </div>
+      <div class="scan-hint">
+        Aponte a câmera do seu celular para este código
+        <span>Conheça a sala e registre sua avaliação</span>
+      </div>
+      <div class="card-footer">steam-guide-web.vercel.app/?local=f-01-f-02</div>
+    </div>
+
+    <!-- Sala F-05 -->
+    <div class="qr-card">
+      <div class="card-brand">Escola SESI • Mostra STEAM 2026</div>
+      <div class="room-badge">SALA F-05</div>
+      <div class="room-title">Engenheiro por um dia</div>
+      <div class="room-block">Bloco F • Térreo</div>
+      <div class="qr-img-wrapper">
+        <img src="/assets/qrcodes/qr-f-05.png" alt="QR Code Sala F-05" />
+      </div>
+      <div class="scan-hint">
+        Aponte a câmera do seu celular para este código
+        <span>Conheça a sala e registre sua avaliação</span>
+      </div>
+      <div class="card-footer">steam-guide-web.vercel.app/?local=f-05</div>
+    </div>
+
+    <!-- Laboratórios B-03 e B-04 -->
+    <div class="qr-card">
+      <div class="card-brand">Escola SESI • Mostra STEAM 2026</div>
+      <div class="room-badge">LABS B-03 e B-04</div>
+      <div class="room-title">Experimentos no laboratório</div>
+      <div class="room-block">Bloco B</div>
+      <div class="qr-img-wrapper">
+        <img src="/assets/qrcodes/qr-b-03-b-04.png" alt="QR Code Labs B-03 e B-04" />
+      </div>
+      <div class="scan-hint">
+        Aponte a câmera do seu celular para este código
+        <span>Conheça a sala e registre sua avaliação</span>
+      </div>
+      <div class="card-footer">steam-guide-web.vercel.app/?local=b-03-b-04</div>
+    </div>
+
+    <!-- Corredor do Bloco F -->
+    <div class="qr-card">
+      <div class="card-brand">Escola SESI • Mostra STEAM 2026</div>
+      <div class="room-badge">CORREDOR F</div>
+      <div class="room-title">Oficina de fotografia e audiovisual</div>
+      <div class="room-block">Bloco F</div>
+      <div class="qr-img-wrapper">
+        <img src="/assets/qrcodes/qr-corredor-f.png" alt="QR Code Corredor F" />
+      </div>
+      <div class="scan-hint">
+        Aponte a câmera do seu celular para este código
+        <span>Conheça a sala e registre sua avaliação</span>
+      </div>
+      <div class="card-footer">steam-guide-web.vercel.app/?local=corredor-f</div>
+    </div>
+
+    <!-- Sala F-09 -->
+    <div class="qr-card">
+      <div class="card-brand">Escola SESI • Mostra STEAM 2026</div>
+      <div class="room-badge">SALA F-09</div>
+      <div class="room-title">West Sharks FTC: robô da temporada BIOBUZZ</div>
+      <div class="room-block">Bloco F • 1º andar</div>
+      <div class="qr-img-wrapper">
+        <img src="/assets/qrcodes/qr-f-09.png" alt="QR Code Sala F-09" />
+      </div>
+      <div class="scan-hint">
+        Aponte a câmera do seu celular para este código
+        <span>Conheça a sala e registre sua avaliação</span>
+      </div>
+      <div class="card-footer">steam-guide-web.vercel.app/?local=f-09</div>
+    </div>
+
+    <!-- Quadra -->
+    <div class="qr-card">
+      <div class="card-brand">Escola SESI • Mostra STEAM 2026</div>
+      <div class="room-badge">QUADRA</div>
+      <div class="room-title">Prática de movimento e integração</div>
+      <div class="room-block">Área Esportiva</div>
+      <div class="qr-img-wrapper">
+        <img src="/assets/qrcodes/qr-quadra.png" alt="QR Code Quadra" />
+      </div>
+      <div class="scan-hint">
+        Aponte a câmera do seu celular para este código
+        <span>Conheça a sala e registre sua avaliação</span>
+      </div>
+      <div class="card-footer">steam-guide-web.vercel.app/?local=quadra</div>
+    </div>
+  </div>
+</body>
+</html>
