@@ -29,7 +29,6 @@ export default function TeacherModal({ teacher, onClose }) {
             <span>EQUIPE 2026</span>
             <h2 id="teacher-name">{teacher.name}</h2>
             <strong>{teacher.role}</strong>
-            {teacher.area && <em>{teacher.area}</em>}
           </div>
         </div>
         <p>{teacher.biography}</p>

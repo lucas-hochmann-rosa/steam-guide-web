@@ -1,5 +1,4 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { roomLocation } from '../data/rooms';
 import { RATING_OPTIONS, getRatingInfo } from '../services/evaluationStorage';
 
 export default function RoomDetailModal({
@@ -43,8 +42,6 @@ export default function RoomDetailModal({
 
   if (!room) return null;
 
-  const place = roomLocation(room);
-
   const teachersFor = (r) =>
     r.teachers
       .map((name) => team.find((member) => member.name === name))
@@ -82,7 +79,6 @@ export default function RoomDetailModal({
         <div>
           <div className="room-place-pills">
             <span className="area-pill">{room.room}</span>
-            {place.floor && <span className="floor-pill">{place.floor}</span>}
           </div>
           <h2>{room.title}</h2>
           <p className="room-area">{room.area}</p>
