@@ -50,7 +50,6 @@ function doPost(e) {
 
     // 2. Validação dos dados essenciais
     const roomId = String(payload.roomId || '').trim();
-    const rating = Number(payload.rating);
 
     const RATING_LABELS = {
       1: 'Ruim',
@@ -60,9 +59,17 @@ function doPost(e) {
       5: 'Excelente'
     };
 
-    const displayRating = String(
-      payload.ratingLabel || RATING_LABELS[rating] || payload.rating || ''
-    ).trim();
+    let displayRating = '';
+    const rawRating = payload.ratingLabel || payload.rating || '';
+    if (rawRating && isNaN(Number(rawRating))) {
+      displayRating = String(rawRating).trim();
+    } else if (payload.ratingNumber && RATING_LABELS[Number(payload.ratingNumber)]) {
+      displayRating = RATING_LABELS[Number(payload.ratingNumber)];
+    } else if (RATING_LABELS[Number(rawRating)]) {
+      displayRating = RATING_LABELS[Number(rawRating)];
+    } else {
+      displayRating = String(rawRating).trim();
+    }
 
     if (!roomId || !displayRating) {
       return jsonResponse({ success: false, error: 'Dados inválidos: roomId e avaliação são obrigatórios.' }, 400);

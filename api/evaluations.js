@@ -95,7 +95,8 @@ export default async function handler(req, res) {
       visitorEmail: cleanVisitorEmail,
       roomId: cleanRoomId,
       roomTitle: cleanRoomTitle,
-      rating: numRating,
+      rating: cleanRatingLabel,
+      ratingNumber: numRating,
       ratingLabel: cleanRatingLabel,
       comment: cleanComment,
       clientUpdatedAt: cleanClientUpdatedAt,
@@ -109,6 +110,9 @@ export default async function handler(req, res) {
     if (webhookUrl) {
       const webhookPayload = {
         ...evaluationRecord,
+        rating: cleanRatingLabel,
+        ratingLabel: cleanRatingLabel,
+        ratingNumber: numRating,
         secret: webhookSecret,
       };
 

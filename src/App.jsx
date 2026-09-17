@@ -7,7 +7,7 @@ import TeacherModal from './components/TeacherModal';
 import CompletionModal from './components/CompletionModal';
 import QRScannerModal from './components/QRScannerModal';
 import RoomDetailModal from './components/RoomDetailModal';
-import { rooms, schoolBlocks, blockHotspots, guideTeam, roomLocation } from './data/rooms';
+import { rooms, schoolBlocks, blockHotspots, guideTeam } from './data/rooms';
 import { team } from './data/team';
 import { resolveRoomId } from './utils/resolveRoom';
 import {
@@ -171,12 +171,16 @@ export default function App() {
     setComments((prev) => ({ ...prev, [currentVisit]: text }));
   };
 
-  const handleFinishVisit = () => {
+  const handleFinishVisit = (explicitRating) => {
     if (!currentVisit) return;
 
+    const star = explicitRating || ratings[currentVisit];
+    if (!star) return;
+
     const currentRoom = rooms.find((r) => r.id === currentVisit);
-    const star = ratings[currentVisit] || 5;
     const comment = comments[currentVisit] || '';
+
+    setRatings((prev) => ({ ...prev, [currentVisit]: star }));
 
     saveRoomEvaluation({
       roomId: currentVisit,
@@ -366,7 +370,6 @@ export default function App() {
               <RoomDetailModal
                 room={activeRoom}
                 done={visited.includes(activeRoom.id)}
-                rating={ratings[activeRoom.id] || 0}
                 comment={comments[activeRoom.id] || ''}
                 galleryIndex={galleryIndex}
                 setGalleryIndex={setGalleryIndex}
@@ -395,7 +398,6 @@ export default function App() {
                 <div className="visit-grid journey-grid room-grid">
                   {rooms.map((room) => {
                     const done = visited.includes(room.id);
-                    const place = roomLocation(room);
                     const roomRating = ratings[room.id];
 
                     const teachersForRoom = room.teachers
@@ -440,9 +442,6 @@ export default function App() {
                           <div className="visit-head">
                             <div className="room-place-pills">
                               <span className="area-pill">{room.room}</span>
-                              {place.floor && (
-                                <span className="floor-pill">{place.floor}</span>
-                              )}
                             </div>
                             <span className="visit-status">
                               {done ? (
@@ -463,21 +462,21 @@ export default function App() {
                           {!room.teamLogo && <small>{room.responsible}</small>}
 
                           {room.teamLogo && (
-                            <button
-                              type="button"
-                              className="room-team-badge card-badge"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleNavigate('robotica');
-                              }}
+                            <div
+                              className="room-teachers compact"
                               aria-label="Conhecer a equipe de robótica West Sharks"
                             >
-                              <img src={room.teamLogo} alt="" />
-                              <span>
-                                <strong>{room.responsible}</strong>
-                                <small>Conheça a equipe</small>
-                              </span>
-                            </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleNavigate('robotica');
+                                }}
+                                aria-label="Conhecer a equipe de robótica West Sharks"
+                              >
+                                <img src={room.teamLogo} alt="Logo West Sharks FTC" />
+                              </button>
+                            </div>
                           )}
 
                           {teachersForRoom.length > 0 && (

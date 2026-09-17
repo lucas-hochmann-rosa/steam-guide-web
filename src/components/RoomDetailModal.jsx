@@ -1,11 +1,10 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { roomLocation } from '../data/rooms';
 import { RATING_OPTIONS, getRatingInfo } from '../services/evaluationStorage';
 
 export default function RoomDetailModal({
   room,
   done,
-  rating,
   comment,
   galleryIndex,
   setGalleryIndex,
@@ -18,6 +17,11 @@ export default function RoomDetailModal({
   team = [],
 }) {
   const textareaRef = useRef(null);
+  const [selectedRating, setSelectedRating] = useState(null);
+
+  useEffect(() => {
+    setSelectedRating(null);
+  }, [room?.id]);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -30,6 +34,11 @@ export default function RoomDetailModal({
     onCommentChange(e.target.value);
     e.target.style.height = 'auto';
     e.target.style.height = `${Math.max(76, e.target.scrollHeight)}px`;
+  };
+
+  const handleSelectRating = (val) => {
+    setSelectedRating(val);
+    onRatingChange(val);
   };
 
   if (!room) return null;
@@ -80,13 +89,19 @@ export default function RoomDetailModal({
           {!room.teamLogo && <p className="room-responsible">{room.responsible}</p>}
 
           {room.teamLogo && (
-            <button className="room-team-badge" onClick={onGoRobotics}>
-              <img src={room.teamLogo} alt="Logo da West Sharks FTC" />
-              <span>
-                <strong>{room.responsible}</strong>
-                <small>Conheça a equipe de robótica</small>
-              </span>
-            </button>
+            <div className="room-teachers" aria-label="Equipe de robótica">
+              <button
+                type="button"
+                onClick={onGoRobotics}
+                aria-label="Conhecer a equipe de robótica West Sharks"
+              >
+                <img src={room.teamLogo} alt="" />
+                <span>
+                  <strong>{room.responsible}</strong>
+                  <small>Conheça a equipe de robótica</small>
+                </span>
+              </button>
+            </div>
           )}
 
           {roomTeachers.length > 0 && (
@@ -173,7 +188,7 @@ export default function RoomDetailModal({
           <div className="finish-emoji-rating">
             <div className="emoji-options-grid" role="radiogroup" aria-label="Avaliação da experiência">
               {RATING_OPTIONS.map((item) => {
-                const isSelected = rating === item.value;
+                const isSelected = selectedRating === item.value;
                 return (
                   <button
                     key={item.value}
@@ -181,7 +196,7 @@ export default function RoomDetailModal({
                     role="radio"
                     aria-checked={isSelected}
                     className={`emoji-option-btn ${isSelected ? 'active' : ''}`}
-                    onClick={() => onRatingChange(item.value)}
+                    onClick={() => handleSelectRating(item.value)}
                     aria-label={`${item.label} (${item.value} de 5)`}
                   >
                     <span className="emoji-face">{item.emoji}</span>
@@ -190,9 +205,9 @@ export default function RoomDetailModal({
                 );
               })}
             </div>
-            {rating ? (
+            {selectedRating ? (
               <div className="emoji-selected-hint">
-                Sua avaliação: <strong>{getRatingInfo(rating)?.emoji} {getRatingInfo(rating)?.label}</strong>
+                Sua avaliação: <strong>{getRatingInfo(selectedRating)?.emoji} {getRatingInfo(selectedRating)?.label}</strong>
               </div>
             ) : null}
           </div>
@@ -214,8 +229,8 @@ export default function RoomDetailModal({
 
           <button
             className="finish-button"
-            disabled={!rating}
-            onClick={onFinishVisit}
+            disabled={!selectedRating}
+            onClick={() => onFinishVisit(selectedRating)}
           >
             {done ? '✓ Atualizar e voltar ao percurso' : 'Concluir visita'}
           </button>
