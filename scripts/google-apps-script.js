@@ -1,6 +1,5 @@
 /**
  * GOOGLE APPS SCRIPT - MOSTRA STEAM 2026 (ESCOLA SESI CHAPECÓ)
- * Planilha: https://docs.google.com/spreadsheets/d/1GTVgZJZq-fdd0U_OWGEyCQCkBbSX60QDCbsqCy8-mHM/edit
  *
  * Este script atua como um Web App (Webhook) para receber avaliações das salas
  * enviadas pelo endpoint seguro da Vercel (/api/evaluations) e sincronizá-las
