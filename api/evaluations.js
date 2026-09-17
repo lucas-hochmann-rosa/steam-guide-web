@@ -6,60 +6,129 @@ export default async function handler(req, res) {
   // Configuração CORS para permitir requisições de origens autorizadas
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
   res.setHeader(
     'Access-Control-Allow-Headers',
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
   );
 
   if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+    return res.status(200).end();
   }
 
-  if (req.method === 'POST') {
-    try {
-      const { roomId, roomTitle, visitorName, rating, comment, updatedAt } = req.body || {};
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Método não permitido. Utilize POST.' });
+  }
 
-      if (!roomId || !rating) {
-        return res.status(400).json({ error: 'Campos obrigatórios ausentes: roomId e rating são necessários.' });
-      }
+  try {
+    const body = req.body || {};
+    const {
+      roomId,
+      roomTitle,
+      visitorName,
+      visitorId,
+      evaluationId,
+      rating,
+      comment,
+      clientUpdatedAt,
+    } = body;
 
-      const evaluationRecord = {
-        roomId,
-        roomTitle: roomTitle || roomId,
-        visitorName: visitorName || 'Visitante anônimo',
-        rating: Number(rating),
-        comment: comment || '',
-        receivedAt: new Date().toISOString(),
-        clientUpdatedAt: updatedAt || new Date().toISOString(),
+    // 1. Validação de roomId
+    if (!roomId || typeof roomId !== 'string' || roomId.trim().length === 0 || roomId.length > 50) {
+      return res.status(400).json({ error: 'Campo roomId inválido ou ausente (máximo 50 caracteres).' });
+    }
+
+    // 2. Validação de rating (nota inteira de 1 a 5)
+    const numRating = Number(rating);
+    if (!Number.isInteger(numRating) || numRating < 1 || numRating > 5) {
+      return res.status(400).json({ error: 'Campo rating inválido: informe um número inteiro de 1 a 5.' });
+    }
+
+    // 3. Sanitização e limites razoáveis de texto
+    const cleanRoomId = roomId.trim();
+    const cleanVisitorId = typeof visitorId === 'string' && visitorId.trim()
+      ? visitorId.trim().substring(0, 100)
+      : 'anonymous';
+    const cleanEvaluationId = typeof evaluationId === 'string' && evaluationId.trim()
+      ? evaluationId.trim().substring(0, 150)
+      : `${cleanVisitorId}_${cleanRoomId}`;
+    const cleanVisitorName = typeof visitorName === 'string' && visitorName.trim()
+      ? visitorName.trim().substring(0, 100)
+      : 'Visitante';
+    const cleanRoomTitle = typeof roomTitle === 'string' && roomTitle.trim()
+      ? roomTitle.trim().substring(0, 150)
+      : cleanRoomId;
+    const cleanComment = typeof comment === 'string'
+      ? comment.trim().substring(0, 1000)
+      : '';
+    const cleanClientUpdatedAt = typeof clientUpdatedAt === 'string' && clientUpdatedAt.trim()
+      ? clientUpdatedAt.trim()
+      : new Date().toISOString();
+
+    const evaluationRecord = {
+      evaluationId: cleanEvaluationId,
+      visitorId: cleanVisitorId,
+      visitorName: cleanVisitorName,
+      roomId: cleanRoomId,
+      roomTitle: cleanRoomTitle,
+      rating: numRating,
+      comment: cleanComment,
+      clientUpdatedAt: cleanClientUpdatedAt,
+      receivedAt: new Date().toISOString(),
+    };
+
+    // 4. Encaminhamento para o Google Apps Script (se WEBHOOK_URL configurado na Vercel)
+    const webhookUrl = process.env.WEBHOOK_URL;
+    const webhookSecret = process.env.EVALUATIONS_WEBHOOK_SECRET || '';
+
+    if (webhookUrl) {
+      const webhookPayload = {
+        ...evaluationRecord,
+        secret: webhookSecret,
       };
 
-      // Se houver um WEBHOOK_URL configurado (ex: Google Sheets via Google Apps Script ou Supabase/Discord)
-      if (process.env.WEBHOOK_URL) {
-        try {
-          await fetch(process.env.WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(evaluationRecord),
-          });
-        } catch (webhookErr) {
-          console.error('Falha ao encaminhar avaliação para o webhook:', webhookErr);
-        }
+      const webhookHeaders = {
+        'Content-Type': 'application/json',
+      };
+      if (webhookSecret) {
+        webhookHeaders['x-webhook-secret'] = webhookSecret;
       }
 
-      console.log('Avaliação recebida:', evaluationRecord);
+      try {
+        const webhookResponse = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: webhookHeaders,
+          body: JSON.stringify(webhookPayload),
+          redirect: 'follow',
+        });
 
-      return res.status(200).json({
-        success: true,
-        message: 'Avaliação registrada com sucesso.',
-        data: evaluationRecord,
-      });
-    } catch (err) {
-      console.error('Erro ao processar avaliação:', err);
-      return res.status(500).json({ error: 'Erro interno ao registrar avaliação.' });
+        if (!webhookResponse.ok) {
+          const errorText = await webhookResponse.text().catch(() => '');
+          console.error(`Erro retornado pelo Google Apps Script (HTTP ${webhookResponse.status}):`, errorText);
+          return res.status(502).json({
+            error: 'Falha ao sincronizar com a planilha central.',
+            status: webhookResponse.status,
+            details: errorText,
+          });
+        }
+      } catch (webhookErr) {
+        console.error('Falha de conexão com o webhook do Google Apps Script:', webhookErr);
+        return res.status(502).json({
+          error: 'Erro de conexão ao contatar a planilha central.',
+          details: webhookErr.message,
+        });
+      }
+    } else {
+      console.warn('Variável de ambiente WEBHOOK_URL não configurada.');
     }
-  }
 
-  return res.status(405).json({ error: 'Método não permitido.' });
+    return res.status(200).json({
+      success: true,
+      message: 'Avaliação processada com sucesso.',
+      data: evaluationRecord,
+    });
+  } catch (err) {
+    console.error('Erro interno no processamento da avaliação:', err);
+    return res.status(500).json({ error: 'Erro interno ao registrar avaliação.' });
+  }
 }

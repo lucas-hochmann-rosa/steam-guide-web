@@ -3,7 +3,7 @@ import react from 'eslint-plugin-react';
 
 export default [
   {
-    ignores: ['dist/**', 'node_modules/**', 'build/**'],
+    ignores: ['dist/**', 'node_modules/**', 'build/**', 'scripts/**'],
   },
   {
     files: ['vite.config.js'],

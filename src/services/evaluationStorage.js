@@ -1,6 +1,7 @@
 const STORAGE_KEYS = {
   VERSION: 'steam-storage-version',
   VISITOR_NAME: 'steam-visitor-name',
+  VISITOR_ID: 'steam-visitor-id',
   VISITED: 'steam-visitados',
   RATINGS: 'steam-avaliacoes',
   COMMENTS: 'steam-comentarios',
@@ -60,6 +61,20 @@ export function setVisitorName(name) {
   return trimmed;
 }
 
+export function getVisitorId() {
+  if (typeof window === 'undefined') return 'visitor_server';
+  try {
+    let id = localStorage.getItem(STORAGE_KEYS.VISITOR_ID);
+    if (!id) {
+      id = 'v_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now().toString(36);
+      localStorage.setItem(STORAGE_KEYS.VISITOR_ID, id);
+    }
+    return id;
+  } catch {
+    return 'v_fallback_' + Date.now().toString(36);
+  }
+}
+
 export function getVisitedRooms() {
   if (typeof window === 'undefined') return [];
   try {
@@ -102,18 +117,27 @@ export function saveRoomEvaluation({ roomId, roomTitle, rating, comment, visitor
   if (typeof window === 'undefined') return null;
 
   const currentVisitor = visitorName || getVisitorName() || 'Visitante';
+  const visitorId = getVisitorId();
+  const evaluationId = `${visitorId}_${roomId}`;
   const evaluations = getAllEvaluations();
   const now = new Date().toISOString();
 
-  const existingIndex = evaluations.findIndex((item) => item.roomId === roomId);
+  const existingIndex = evaluations.findIndex(
+    (item) => item.evaluationId === evaluationId || item.roomId === roomId
+  );
+
   const evaluationRecord = {
-    id: roomId,
+    id: evaluationId,
+    evaluationId,
+    visitorId,
     roomId,
     roomTitle: roomTitle || roomId,
     visitorName: currentVisitor,
     rating: Number(rating),
     comment: (comment || '').trim(),
+    clientUpdatedAt: now,
     updatedAt: now,
+    syncStatus: 'pending',
   };
 
   if (existingIndex >= 0) {
@@ -144,6 +168,7 @@ export function saveRoomEvaluation({ roomId, roomTitle, rating, comment, visitor
     console.warn('Erro ao atualizar chaves legadas:', err);
   }
 
+  // Tenta sincronizar imediatamente
   syncEvaluationRemote(evaluationRecord).catch(() => {});
 
   return evaluationRecord;
@@ -222,6 +247,24 @@ export function exportEvaluationsAsJson() {
   document.body.removeChild(link);
 }
 
+export function markEvaluationSynced(evaluationId) {
+  if (typeof window === 'undefined' || !evaluationId) return;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.EVALUATIONS);
+    if (!raw) return;
+    const evaluations = JSON.parse(raw);
+    const item = evaluations.find(
+      (ev) => ev.evaluationId === evaluationId || ev.id === evaluationId
+    );
+    if (item && item.syncStatus !== 'synced') {
+      item.syncStatus = 'synced';
+      localStorage.setItem(STORAGE_KEYS.EVALUATIONS, JSON.stringify(evaluations));
+    }
+  } catch (err) {
+    console.warn('Erro ao marcar avaliação como sincronizada:', err);
+  }
+}
+
 export async function syncEvaluationRemote(evaluation) {
   try {
     const apiUrl = import.meta.env.VITE_EVALUATIONS_API_URL || '/api/evaluations';
@@ -230,10 +273,34 @@ export async function syncEvaluationRemote(evaluation) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(evaluation),
     });
+
     if (response.ok) {
-      return await response.json();
+      const targetId = evaluation.evaluationId || evaluation.id || `${evaluation.visitorId}_${evaluation.roomId}`;
+      markEvaluationSynced(targetId);
+      return await response.json().catch(() => ({ success: true }));
     }
-  } catch {
-    return null;
+  } catch (err) {
+    console.warn('Falha na sincronização remota, registro mantido como pendente:', err);
+  }
+  return null;
+}
+
+let isSyncing = false;
+
+export async function syncPendingEvaluations() {
+  if (typeof window === 'undefined' || isSyncing) return;
+  if (typeof navigator !== 'undefined' && !navigator.onLine) return;
+
+  const evaluations = getAllEvaluations();
+  const pending = evaluations.filter((ev) => ev.syncStatus !== 'synced');
+  if (pending.length === 0) return;
+
+  isSyncing = true;
+  try {
+    for (const item of pending) {
+      await syncEvaluationRemote(item);
+    }
+  } finally {
+    isSyncing = false;
   }
 }

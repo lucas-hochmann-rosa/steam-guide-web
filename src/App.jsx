@@ -6,7 +6,6 @@ import WelcomeModal from './components/WelcomeModal';
 import TeacherModal from './components/TeacherModal';
 import CompletionModal from './components/CompletionModal';
 import QRScannerModal from './components/QRScannerModal';
-import EvaluationsModal from './components/EvaluationsModal';
 import RoomDetailModal from './components/RoomDetailModal';
 import { rooms, schoolBlocks, blockHotspots, guideTeam, roomLocation } from './data/rooms';
 import { team } from './data/team';
@@ -19,6 +18,7 @@ import {
   getAllEvaluations,
   saveRoomEvaluation,
   getRatingInfo,
+  syncPendingEvaluations,
 } from './services/evaluationStorage';
 import { assetPath } from './utils/assetPath';
 
@@ -75,7 +75,6 @@ export default function App() {
   const [visited, setVisited] = useState([]);
   const [ratings, setRatings] = useState({});
   const [comments, setComments] = useState({});
-  const [evaluations, setEvaluations] = useState([]);
   const [currentVisit, setCurrentVisit] = useState(null);
   const [scannerOpen, setScannerOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState(null);
@@ -84,7 +83,6 @@ export default function App() {
   const [welcomeOpen, setWelcomeOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [completionOpen, setCompletionOpen] = useState(false);
-  const [evaluationsOpen, setEvaluationsOpen] = useState(false);
   const [selectedBlock, setSelectedBlock] = useState(null);
 
   useEffect(() => {
@@ -97,7 +95,6 @@ export default function App() {
     setVisited(storedVisited);
 
     const storedEvaluations = getAllEvaluations();
-    setEvaluations(storedEvaluations);
 
     const loadedRatings = {};
     const loadedComments = {};
@@ -121,7 +118,19 @@ export default function App() {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register(assetPath('/sw.js')).catch(() => {});
     }
+
+    syncPendingEvaluations();
+    const handleOnline = () => syncPendingEvaluations();
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
   }, []);
+
+  useEffect(() => {
+    if (!selectedBlock) return;
+    const handleDocClick = () => setSelectedBlock(null);
+    window.addEventListener('click', handleDocClick);
+    return () => window.removeEventListener('click', handleDocClick);
+  }, [selectedBlock]);
 
   const handleNavigate = (nextView) => {
     setView(nextView);
@@ -181,9 +190,6 @@ export default function App() {
       setVisitedRooms(updatedVisited);
     }
 
-    const updatedEvaluations = getAllEvaluations();
-    setEvaluations(updatedEvaluations);
-
     handleCloseRoom();
 
     if (!isAlreadyVisited && updatedVisited.length === rooms.length) {
@@ -200,8 +206,6 @@ export default function App() {
         onNavigate={handleNavigate}
         mobileMenuOpen={mobileMenuOpen}
         setMobileMenuOpen={setMobileMenuOpen}
-        onOpenEvaluations={() => setEvaluationsOpen(true)}
-        evaluationsCount={evaluations.length}
       />
 
       <main>
@@ -939,7 +943,7 @@ export default function App() {
         )}
       </main>
 
-      <Footer onOpenEvaluations={() => setEvaluationsOpen(true)} />
+      <Footer />
 
       <BottomNav
         currentView={view}
@@ -973,13 +977,6 @@ export default function App() {
           onGoSurvey={() => handleNavigate('questionario')}
         />
       )}
-
-      <EvaluationsModal
-        isOpen={evaluationsOpen}
-        onClose={() => setEvaluationsOpen(false)}
-        evaluations={evaluations}
-        rooms={rooms}
-      />
     </div>
   );
 }

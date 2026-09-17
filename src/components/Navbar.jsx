@@ -6,8 +6,6 @@ export default function Navbar({
   onNavigate,
   mobileMenuOpen,
   setMobileMenuOpen,
-  onOpenEvaluations,
-  evaluationsCount = 0,
 }) {
   const navItems = [
     { id: 'inicio', label: 'Início' },
@@ -43,14 +41,6 @@ export default function Navbar({
           </button>
         ))}
 
-        <button
-          className="evaluations-trigger-btn"
-          onClick={onOpenEvaluations}
-          title="Ver e exportar avaliações das salas"
-          style={{ marginLeft: '8px' }}
-        >
-          <span>😊</span> Avaliações {evaluationsCount > 0 ? `(${evaluationsCount})` : ''}
-        </button>
       </nav>
 
       <button
@@ -76,15 +66,6 @@ export default function Navbar({
               {item.label}
             </button>
           ))}
-          <button
-            onClick={() => {
-              setMobileMenuOpen(false);
-              onOpenEvaluations();
-            }}
-            style={{ color: 'var(--blue)', fontWeight: 900 }}
-          >
-            😊 Minhas avaliações {evaluationsCount > 0 ? `(${evaluationsCount})` : ''}
-          </button>
         </nav>
       )}
     </header>

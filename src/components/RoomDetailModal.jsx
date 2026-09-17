@@ -194,11 +194,7 @@ export default function RoomDetailModal({
               <div className="emoji-selected-hint">
                 Sua avaliação: <strong>{getRatingInfo(rating)?.emoji} {getRatingInfo(rating)?.label}</strong>
               </div>
-            ) : (
-              <div className="emoji-selected-hint empty">
-                Toque em um rostinho para registrar sua avaliação
-              </div>
-            )}
+            ) : null}
           </div>
 
           <div className="comment-block">

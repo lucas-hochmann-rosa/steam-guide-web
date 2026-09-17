@@ -1,7 +1,7 @@
 import React from 'react';
 import { assetPath } from '../utils/assetPath';
 
-export default function Footer({ onOpenEvaluations }) {
+export default function Footer() {
   return (
     <footer>
       <div className="footer-lockup">
@@ -11,23 +11,6 @@ export default function Footer({ onOpenEvaluations }) {
         />
       </div>
       <p>Guia Digital · Mostra STEAM 2026</p>
-      {onOpenEvaluations && (
-        <button
-          onClick={onOpenEvaluations}
-          style={{
-            background: 'none',
-            border: '1px solid rgba(255,255,255,0.3)',
-            borderRadius: '8px',
-            color: '#dceaf3',
-            padding: '6px 12px',
-            cursor: 'pointer',
-            fontSize: '12px',
-            fontWeight: 'bold',
-          }}
-        >
-          Exportar Avaliações ↗
-        </button>
-      )}
     </footer>
   );
 }
