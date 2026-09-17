@@ -333,6 +333,9 @@ function criarAbaResultados() {
  * Selecione 'testarInsercaoAvaliacao' no menu suspenso acima e clique em 'Executar'.
  */
 function testarInsercaoAvaliacao() {
+  const scriptProperties = PropertiesService.getScriptProperties();
+  const currentSecret = scriptProperties.getProperty('EVALUATIONS_WEBHOOK_SECRET') || '';
+
   const fakeEvent = {
     postData: {
       contents: JSON.stringify({
@@ -344,10 +347,21 @@ function testarInsercaoAvaliacao() {
         rating: 'Excelente',
         ratingLabel: 'Excelente',
         ratingNumber: 5,
-        comment: 'Teste direto no Apps Script executado com sucesso!'
+        comment: 'Teste direto no Apps Script executado com sucesso!',
+        secret: currentSecret
       })
     }
   };
   const resposta = doPost(fakeEvent);
   Logger.log('Resultado do teste: ' + resposta.getContent());
+}
+
+/**
+ * Função utilitária para remover a trava de segredo com 1 clique!
+ * Se você não quiser ter que cadastrar chave de segredo na Vercel,
+ * basta selecionar 'removerSegredo' acima e clicar em 'Executar'.
+ */
+function removerSegredo() {
+  PropertiesService.getScriptProperties().deleteProperty('EVALUATIONS_WEBHOOK_SECRET');
+  Logger.log('Segredo removido com sucesso! Agora o Apps Script aceitará os envios da Vercel normalmente.');
 }
