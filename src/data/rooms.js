@@ -62,8 +62,8 @@ export const rooms = [
     images: [assetPath("/assets/salas/f05-engenheiro-por-um-dia.png")],
   },
   {
-    id: "f-20",
-    room: "Sala F-20",
+    id: "a-19",
+    room: "Sala A-19",
     title: "O Caminho dos Direitos",
     area: "Linguagens e Ciências Humanas",
     responsible: "Professor Cristiano Gaio",
@@ -73,7 +73,21 @@ export const rooms = [
     accent: "#298B97",
     soft: "#E1F2F4",
     icon: assetPath("/assets/icon-humanas.svg"),
-    images: [assetPath("/assets/salas/f20-caminho-dos-direitos.png")],
+    images: [assetPath("/assets/salas/a19-caminho-dos-direitos.png")],
+  },
+  {
+    id: "f-20",
+    room: "Sala F-20",
+    title: "Atividades De física",
+    area: "Ciências da Natureza",
+    responsible: "Professora Daniele Simoneti",
+    teachers: ["Daniele Simoneti"],
+    description:
+      "Um espaço criado pelos estudantes para explorar conceitos de Física por meio de experiências e atividades práticas, abordando óptica, eletrostática, eletrodinâmica e outros conteúdos trabalhados ao longo do ano.",
+    accent: "#10768B",
+    soft: "#DDF3F3",
+    icon: assetPath("/assets/icon-natureza.svg"),
+    images: [assetPath("/assets/salas/f20-fisica-na-pratica.png")],
   },
   {
     id: "b-03-b-04",
@@ -162,7 +176,7 @@ export const roomLocation = (room) => {
 };
 
 export const schoolBlocks = [
-  { id: "A", name: "Bloco A", description: "Secretaria" },
+  { id: "A", name: "Bloco A", description: "Secretaria e Sala A-19" },
   { id: "B", name: "Bloco B", description: "Laboratórios e Sanitários" },
   { id: "C", name: "Bloco C", description: "Estacionamento inferior" },
   { id: "D", name: "Bloco D", description: "Cantina e Sanitários" },

@@ -235,13 +235,14 @@ function criarAbaResultados() {
     ['f-13', 'Globalização em Arte: Arte, Geografia e Inglês', '=COUNTIF(Avaliações!E2:E, "f-13")'],
     ['f-01-f-02', 'Jogos, desafios, charadas e enigmas matemáticos', '=COUNTIF(Avaliações!E2:E, "f-01-f-02")'],
     ['f-05', 'Engenheiro por um dia', '=COUNTIF(Avaliações!E2:E, "f-05")'],
-    ['f-20', 'O Caminho dos Direitos', '=COUNTIF(Avaliações!E2:E, "f-20")'],
+    ['a-19', 'O Caminho dos Direitos', '=COUNTIF(Avaliações!E2:E, "a-19")'],
+    ['f-20', 'Atividades De física', '=COUNTIF(Avaliações!E2:E, "f-20")'],
     ['b-03-b-04', 'Experimentos no laboratório', '=COUNTIF(Avaliações!E2:E, "b-03-b-04")'],
     ['corredor-f', 'Oficina de fotografia e audiovisual', '=COUNTIF(Avaliações!E2:E, "corredor-f")'],
     ['f-09', 'West Sharks FTC: robô da temporada BIOBUZZ', '=COUNTIF(Avaliações!E2:E, "f-09")'],
     ['quadra', 'Prática de movimento e integração', '=COUNTIF(Avaliações!E2:E, "quadra")']
   ];
-  sheetResultados.getRange('A12:C21').setValues(salas);
+  sheetResultados.getRange('A12:C22').setValues(salas);
   sheetResultados.getRange('A12:C12').setFontWeight('bold').setBackground('#227C47').setFontColor('#ffffff');
 
   // Remove gráficos antigos se já existirem na aba
@@ -266,7 +267,7 @@ function criarAbaResultados() {
   sheetResultados.insertChart(chartSatisfacao);
 
   // Gráfico 2: Participação por Espaço (Gráfico de Barras Horizontais)
-  const chartRangeSalas = sheetResultados.getRange('B12:C21');
+  const chartRangeSalas = sheetResultados.getRange('B12:C22');
   const chartSalas = sheetResultados.newChart()
     .asBarChart()
     .addRange(chartRangeSalas)

@@ -8,7 +8,7 @@ const STORAGE_KEYS = {
   EVALUATIONS: 'steam-room-evaluations',
 };
 
-const STORAGE_VERSION = '2026-09-17-v1';
+const STORAGE_VERSION = '2026-09-17-v2';
 
 export const RATING_OPTIONS = [
   { value: 1, emoji: '🙁', label: 'Ruim' },
@@ -43,6 +43,33 @@ export function initializeStorage() {
         updatedAt: new Date().toISOString(),
       }));
       localStorage.setItem(STORAGE_KEYS.EVALUATIONS, JSON.stringify(migrated));
+    }
+
+    // Migração de avaliações antigas onde F-20 era 'O Caminho dos Direitos' -> agora A-19
+    const rawEvals = localStorage.getItem(STORAGE_KEYS.EVALUATIONS);
+    if (rawEvals) {
+      try {
+        const evals = JSON.parse(rawEvals);
+        let changed = false;
+        const updated = evals.map((ev) => {
+          if (ev.roomId === 'f-20' && ev.roomTitle && /caminho|direito/i.test(ev.roomTitle)) {
+            changed = true;
+            return {
+              ...ev,
+              roomId: 'a-19',
+              roomTitle: 'O Caminho dos Direitos',
+              evaluationId: ev.evaluationId ? ev.evaluationId.replace('_f-20', '_a-19') : `${ev.visitorId || 'v'}_a-19`,
+              id: 'a-19',
+            };
+          }
+          return ev;
+        });
+        if (changed) {
+          localStorage.setItem(STORAGE_KEYS.EVALUATIONS, JSON.stringify(updated));
+        }
+      } catch {
+        // Ignora erros de parse caso o storage esteja corrompido
+      }
     }
 
     localStorage.setItem(STORAGE_KEYS.VERSION, STORAGE_VERSION);
@@ -200,7 +227,7 @@ export function saveRoomEvaluation({ roomId, roomTitle, rating, comment, visitor
   return evaluationRecord;
 }
 
-export function getEvaluationSummary(totalRoomsCount = 9) {
+export function getEvaluationSummary(totalRoomsCount = 10) {
   const evaluations = getAllEvaluations();
   const totalEvaluated = evaluations.length;
   const averageRating = totalEvaluated > 0
