@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { roomLocation } from '../data/rooms';
 
 export default function RoomDetailModal({

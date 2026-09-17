@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from './components/Navbar';
 import BottomNav from './components/BottomNav';
 import Footer from './components/Footer';
@@ -86,7 +86,6 @@ export default function App() {
   const [evaluationsOpen, setEvaluationsOpen] = useState(false);
   const [selectedBlock, setSelectedBlock] = useState(null);
 
-  // InicializaÃ§Ã£o e recuperaÃ§Ã£o de dados persistidos
   useEffect(() => {
     initializeStorage();
 
@@ -108,7 +107,6 @@ export default function App() {
     setRatings(loadedRatings);
     setComments(loadedComments);
 
-    // ParÃ¢metro de QR Code na URL
     const params = new URLSearchParams(window.location.search);
     const qrLocation = params.get('local');
     if (qrLocation && rooms.some((r) => r.id === qrLocation.toLowerCase())) {
@@ -167,7 +165,6 @@ export default function App() {
     const star = ratings[currentVisit] || 5;
     const comment = comments[currentVisit] || '';
 
-    // Salva via camada de serviÃ§o estruturada
     saveRoomEvaluation({
       roomId: currentVisit,
       roomTitle: currentRoom ? currentRoom.title : currentVisit,
@@ -176,7 +173,6 @@ export default function App() {
       visitorName,
     });
 
-    // Atualiza estado local de salas visitadas
     const isAlreadyVisited = visited.includes(currentVisit);
     const updatedVisited = isAlreadyVisited ? visited : [...visited, currentVisit];
     if (!isAlreadyVisited) {
@@ -184,14 +180,11 @@ export default function App() {
       setVisitedRooms(updatedVisited);
     }
 
-    // Atualiza lista de avaliaÃ§Ãµes salvas
     const updatedEvaluations = getAllEvaluations();
     setEvaluations(updatedEvaluations);
 
-    // Fecha o modal
     handleCloseRoom();
 
-    // Se completou 100% das salas pela primeira vez
     if (!isAlreadyVisited && updatedVisited.length === rooms.length) {
       setCompletionOpen(true);
     }
@@ -226,8 +219,8 @@ export default function App() {
               />
 
               <div className="hero-copy">
-                <span className="eyebrow">18 e 19 de setembro de 2026 Â· Escola SESI</span>
-                {visitorName && <p className="visitor-greeting">OlÃ¡, {visitorName}!</p>}
+                <span className="eyebrow">18 e 19 de setembro de 2026 · Escola SESI</span>
+                {visitorName && <p className="visitor-greeting">Olá, {visitorName}!</p>}
                 <h1>
                   Mostra{' '}
                   <span className="steam-word">
@@ -239,13 +232,13 @@ export default function App() {
                   </span>
                 </h1>
                 <p>
-                  Um guia para descobrir ideias, experiÃªncias e projetos que conectam
-                  conhecimento, criatividade e transformaÃ§Ã£o.
+                  Um guia para descobrir ideias, experiências e projetos que conectam
+                  conhecimento, criatividade e transformação.
                 </p>
 
                 <div className="hero-actions">
                   <button className="primary" onClick={() => handleNavigate('programacao')}>
-                    ComeÃ§ar meu percurso <span>â†’</span>
+                    Começar meu percurso <span>→</span>
                   </button>
                   <button className="secondary" onClick={() => handleNavigate('mapa')}>
                     Ver mapa da mostra
@@ -260,18 +253,18 @@ export default function App() {
                   alt="Escola SESI"
                 />
                 <span className="mini-label">MOSTRA STEAM 2026</span>
-                <strong>Guia de visitaÃ§Ã£o</strong>
+                <strong>Guia de visitação</strong>
                 <div className="event-meta event-meta-new">
                   <span>
                     <b>18 e 19</b>
                     <small>DE SETEMBRO</small>
                   </span>
                   <span>
-                    <small>INÃCIO</small>
+                    <small>INÍCIO</small>
                     <b>08h</b>
                   </span>
                   <span>
-                    <small>TÃ‰RMINO</small>
+                    <small>TÉRMINO</small>
                     <b>12h</b>
                   </span>
                 </div>
@@ -286,8 +279,8 @@ export default function App() {
                 </h2>
                 <p>
                   {visited.length
-                    ? 'Continue explorando os espaÃ§os da Mostra.'
-                    : 'Seu percurso comeÃ§a na primeira sala que vocÃª visitar.'}
+                    ? 'Continue explorando os espaços da Mostra.'
+                    : 'Seu percurso começa na primeira sala que você visitar.'}
                 </p>
               </div>
 
@@ -305,49 +298,49 @@ export default function App() {
             <section className="quick-section content-width">
               <div className="section-heading">
                 <div>
-                  <span className="eyebrow dark">ACESSO RÃPIDO</span>
-                  <h2>O que vocÃª quer descobrir?</h2>
+                  <span className="eyebrow dark">ACESSO RÁPIDO</span>
+                  <h2>O que você quer descobrir?</h2>
                 </div>
               </div>
 
               <div className="quick-grid">
                 <button onClick={() => handleNavigate('programacao')}>
-                  <span className="quick-icon blue">âœ“</span>
+                  <span className="quick-icon blue">✓</span>
                   <strong>Seu percurso</strong>
-                  <small>Acompanhe espaÃ§os visitados</small>
-                  <b>â†’</b>
+                  <small>Acompanhe espaços visitados</small>
+                  <b>→</b>
                 </button>
                 <button onClick={() => handleNavigate('mapa')}>
-                  <span className="quick-icon green">âŒ-</span>
+                  <span className="quick-icon green">⌖</span>
                   <strong>Mapa da mostra</strong>
-                  <small>Encontre cada espaÃ§o</small>
-                  <b>â†’</b>
+                  <small>Encontre cada espaço</small>
+                  <b>→</b>
                 </button>
                 <button onClick={() => handleNavigate('equipe')}>
-                  <span className="quick-icon teal">â-</span>
-                  <strong>Equipe pedagÃ³gica</strong>
-                  <small>ConheÃ§a educadores e gestÃ£o</small>
-                  <b>â†’</b>
+                  <span className="quick-icon teal">●</span>
+                  <strong>Equipe pedagógica</strong>
+                  <small>Conheça educadores e gestão</small>
+                  <b>→</b>
                 </button>
                 <button onClick={() => handleNavigate('mais')}>
-                  <span className="quick-icon yellow">âœ¦</span>
-                  <strong>O que Ã© STEAM?</strong>
-                  <small>ConheÃ§a a metodologia</small>
-                  <b>â†’</b>
+                  <span className="quick-icon yellow">✦</span>
+                  <strong>O que é STEAM?</strong>
+                  <small>Conheça a metodologia</small>
+                  <b>→</b>
                 </button>
               </div>
             </section>
 
             <section className="survey-invite content-width">
               <div>
-                <span className="eyebrow dark">SUA OPINIÃƒO IMPORTA</span>
-                <h2>Como foi sua experiÃªncia?</h2>
+                <span className="eyebrow dark">SUA OPINIÃO IMPORTA</span>
+                <h2>Como foi sua experiência?</h2>
                 <p>
-                  Conte o que mais gostou e ajude a construir as prÃ³ximas ediÃ§Ãµes da Mostra.
+                  Conte o que mais gostou e ajude a construir as próximas edições da Mostra.
                 </p>
               </div>
               <button className="primary" onClick={() => handleNavigate('questionario')}>
-                Responder questionÃ¡rio
+                Responder questionário
               </button>
             </section>
           </>
@@ -356,7 +349,7 @@ export default function App() {
         {view === 'programacao' && (
           <Page
             title="Seu percurso"
-            subtitle="ConheÃ§a as atividades de cada sala e acompanhe sua visita pela Mostra."
+            subtitle="Conheça as atividades de cada sala e acompanhe sua visita pela Mostra."
             kicker=""
             theme="checklist"
             graph={assetPath('/assets/grafismo-robotica.svg')}
@@ -440,10 +433,10 @@ export default function App() {
                             <span className="visit-status">
                               {done ? (
                                 <span style={{ color: 'var(--green)' }}>
-                                  âœ“ Visitada {roomRating ? `(â˜… ${roomRating})` : ''}
+                                  ✓ Visitada {roomRating ? `(★ ${roomRating})` : ''}
                                 </span>
                               ) : (
-                                'NÃ£o visitada'
+                                'Não visitada'
                               )}
                             </span>
                           </div>
@@ -465,7 +458,7 @@ export default function App() {
                               <img src={room.teamLogo} alt="" />
                               <span>
                                 <strong>{room.responsible}</strong>
-                                <small>ConheÃ§a a equipe</small>
+                                <small>Conheça a equipe</small>
                               </span>
                             </button>
                           )}
@@ -473,7 +466,7 @@ export default function App() {
                           {teachersForRoom.length > 0 && (
                             <div
                               className="room-teachers compact"
-                              aria-label="ConheÃ§a os professores responsÃ¡veis"
+                              aria-label="Conheça os professores responsáveis"
                             >
                               {teachersForRoom.map((teacher) => (
                                 <button
@@ -489,7 +482,7 @@ export default function App() {
 
                           {room.provisional && (
                             <span className="provisional-card">
-                              Detalhamento provisÃ³rio
+                              Detalhamento provisório
                             </span>
                           )}
 
@@ -497,7 +490,7 @@ export default function App() {
                             className="open-space"
                             onClick={() => handleOpenRoom(room.id)}
                           >
-                            {done ? 'Ver novamente' : 'Conhecer a sala'} â†’
+                            {done ? 'Ver novamente' : 'Conhecer a sala'} →
                           </button>
                         </div>
                       </article>
@@ -512,7 +505,7 @@ export default function App() {
         {view === 'mapa' && (
           <Page
             title="Mapa da mostra"
-            subtitle="Consulte os blocos e encontre os espaÃ§os da Escola SESI SENAI ChapecÃ³."
+            subtitle="Consulte os blocos e encontre os espaços da Escola SESI SENAI Chapecó."
             kicker=""
             theme="map"
             graph={assetPath('/assets/grafismo-humanas.svg')}
@@ -523,7 +516,7 @@ export default function App() {
                   <div className="map-interactive" onClick={() => setSelectedBlock(null)}>
                     <img
                       src={assetPath('/assets/mapa-escola-sesi-senai-chapeco.png')}
-                      alt="Mapa 2D da Escola SESI SENAI ChapecÃ³ com os blocos A a H"
+                      alt="Mapa 2D da Escola SESI SENAI Chapecó com os blocos A a H"
                     />
                     {schoolBlocks.map((block) => (
                       <button
@@ -534,7 +527,7 @@ export default function App() {
                           event.stopPropagation();
                           setSelectedBlock(block.id);
                         }}
-                        aria-label={`Ver informaÃ§Ãµes do ${block.name}`}
+                        aria-label={`Ver informações do ${block.name}`}
                       >
                         <span>{block.id}</span>
                       </button>
@@ -547,8 +540,8 @@ export default function App() {
                           className="map-block-popup"
                           onClick={(event) => event.stopPropagation()}
                         >
-                          <button onClick={() => setSelectedBlock(null)} aria-label="Fechar informaÃ§Ãµes">
-                            Ã-
+                          <button onClick={() => setSelectedBlock(null)} aria-label="Fechar informações">
+                            ×
                           </button>
                           <b>{block.id}</b>
                           <div>
@@ -560,20 +553,20 @@ export default function App() {
                     })()}
                   </div>
                   <figcaption>
-                    Toque nas letras para conhecer os blocos Â·{' '}
+                    Toque nas letras para conhecer os blocos ·{' '}
                     <a
                       href={assetPath('/assets/mapa-escola-sesi-senai-chapeco.png')}
                       target="_blank"
                       rel="noreferrer"
                     >
-                      abrir mapa completo â†-
+                      abrir mapa completo ↗
                     </a>
                   </figcaption>
                 </figure>
 
                 <section className="block-f-map" aria-labelledby="block-f-title">
                   <div>
-                    <span>DETALHAMENTO DOS ESPAÃ‡OS</span>
+                    <span>DETALHAMENTO DOS ESPAÇOS</span>
                     <h2 id="block-f-title">Mapa detalhado do Bloco F</h2>
                     <p>
                       Localize as salas F-01, F-02, F-03, F-05, F-08, F-13, F-18, F-20 e o Corredor F.
@@ -615,7 +608,7 @@ export default function App() {
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Abrir localizaÃ§Ã£o da escola â†-
+                  Abrir localização da escola ↗
                 </a>
               </section>
             </div>
@@ -624,15 +617,15 @@ export default function App() {
 
         {view === 'equipe' && (
           <Page
-            title="Equipe pedagÃ³gica 2026"
-            subtitle="Educadores e profissionais que constroem as experiÃªncias de aprendizagem da Escola SESI."
-            kicker="ESCOLA SESI CHAPECÃ“"
+            title="Equipe pedagógica 2026"
+            subtitle="Educadores e profissionais que constroem as experiências de aprendizagem da Escola SESI."
+            kicker="ESCOLA SESI CHAPECÓ"
             theme="team"
             graph={assetPath('/assets/grafismo-humanas.svg')}
           >
             <section className="team-intro">
               <div>
-                <h2>Quem faz parte desta histÃ³ria</h2>
+                <h2>Quem faz parte desta história</h2>
               </div>
               <img src={assetPath('/assets/icon-natureza.svg')} alt="" />
             </section>
@@ -671,10 +664,10 @@ export default function App() {
             graph={assetPath('/assets/grafismo-linguagens.svg')}
           >
             <section className="authors-intro">
-              <h2>Quem criou esta experiÃªncia</h2>
+              <h2>Quem criou esta experiência</h2>
               <p>
-                ConheÃ§a os estudantes responsÃ¡veis pelo desenvolvimento do guia de
-                visitaÃ§Ã£o da Mostra STEAM 2026 e acesse seus portfÃ³lios.
+                Conheça os estudantes responsáveis pelo desenvolvimento do guia de
+                visitação da Mostra STEAM 2026 e acesse seus portfólios.
               </p>
             </section>
 
@@ -685,7 +678,7 @@ export default function App() {
                   href={member.portfolio}
                   target="_blank"
                   rel="noreferrer"
-                  aria-label={`Acessar o portfÃ³lio de ${member.name}`}
+                  aria-label={`Acessar o portfólio de ${member.name}`}
                 >
                   <img
                     src={member.image}
@@ -703,8 +696,8 @@ export default function App() {
 
         {view === 'mais' && (
           <Page
-            title="O que Ã© STEAM?"
-            subtitle="Uma metodologia que conecta saberes para transformar ideias em soluÃ§Ãµes."
+            title="O que é STEAM?"
+            subtitle="Uma metodologia que conecta saberes para transformar ideias em soluções."
             kicker=""
             theme="steam"
             graph={assetPath('/assets/grafismo-matematica.svg')}
@@ -729,32 +722,32 @@ export default function App() {
               </div>
               <div>
                 <p>
-                  A Mostra STEAM Ã© uma experiÃªncia de aprendizagem que conecta CiÃªncia,
-                  Tecnologia, Engenharia, Artes e MatemÃ¡tica em projetos, desafios e
-                  investigaÃ§Ãµes com sentido para os estudantes.
+                  A Mostra STEAM é uma experiência de aprendizagem que conecta Ciência,
+                  Tecnologia, Engenharia, Artes e Matemática em projetos, desafios e
+                  investigações com sentido para os estudantes.
                 </p>
                 <div className="steam-actions">
                   <button className="team-cta" onClick={() => handleNavigate('equipe')}>
-                    ConheÃ§a nossa equipe 2026
+                    Conheça nossa equipe 2026
                   </button>
                 </div>
               </div>
             </section>
 
-            <section className="steam-principles" aria-label="PrincÃ­pios da Mostra STEAM">
+            <section className="steam-principles" aria-label="Princípios da Mostra STEAM">
               <article>
                 <span>01</span>
                 <h3>Aprender fazendo</h3>
                 <p>
-                  Os estudantes investigam problemas, testam hipÃ³teses, constroem soluÃ§Ãµes
-                  e aprendem a partir da experiÃªncia â€” nÃ£o apenas da teoria.
+                  Os estudantes investigam problemas, testam hipóteses, constroem soluções
+                  e aprendem a partir da experiência - não apenas da teoria.
                 </p>
               </article>
               <article>
                 <span>02</span>
-                <h3>IntegraÃ§Ã£o de saberes</h3>
+                <h3>Integração de saberes</h3>
                 <p>
-                  Uma mesma situaÃ§Ã£o pode envolver FÃ­sica, QuÃ­mica, Biologia, MatemÃ¡tica,
+                  Uma mesma situação pode envolver Física, Química, Biologia, Matemática,
                   Artes, Linguagens e Tecnologia, mostrando que o conhecimento se conecta.
                 </p>
               </article>
@@ -762,8 +755,8 @@ export default function App() {
                 <span>03</span>
                 <h3>Valor para a Escola SESI</h3>
                 <p>
-                  A Mostra torna visÃ­vel a proposta educacional do SESI: formar estudantes
-                  criativos, colaborativos, crÃ­ticos e preparados para transformar desafios
+                  A Mostra torna visível a proposta educacional do SESI: formar estudantes
+                  criativos, colaborativos, críticos e preparados para transformar desafios
                   reais.
                 </p>
               </article>
@@ -774,12 +767,12 @@ export default function App() {
               <h2>Uma escola que transforma curiosidade em protagonismo.</h2>
               <div>
                 <p>
-                  Ao criar espaÃ§os para experimentar, comunicar ideias e trabalhar em equipe,
+                  Ao criar espaços para experimentar, comunicar ideias e trabalhar em equipe,
                   a Mostra fortalece a autonomia dos alunos e aproxima a aprendizagem da vida,
                   da comunidade e do futuro do trabalho.
                 </p>
                 <p>
-                  Para as famÃ­lias e para a comunidade escolar, ela tambÃ©m revela processos:
+                  Para as famílias e para a comunidade escolar, ela também revela processos:
                   mostra como os estudantes pensam, criam e colaboram, valorizando o percurso
                   tanto quanto o resultado.
                 </p>
@@ -797,8 +790,8 @@ export default function App() {
               <article>
                 <InfoIcon type="team" />
                 <div>
-                  <b>RealizaÃ§Ã£o</b>
-                  <p>Turma 302 Â· Escola SESI</p>
+                  <b>Realização</b>
+                  <p>Turma 302 · Escola SESI</p>
                 </div>
               </article>
               <article>
@@ -811,14 +804,14 @@ export default function App() {
               <article>
                 <InfoIcon type="location" />
                 <div>
-                  <b>LocalizaÃ§Ã£o</b>
+                  <b>Localização</b>
                   <p>
                     <a
                       href="https://maps.app.goo.gl/afNi9tttCGPfRSGf6"
                       target="_blank"
                       rel="noreferrer"
                     >
-                      Abrir no Google Maps â†-
+                      Abrir no Google Maps ↗
                     </a>
                   </p>
                 </div>
@@ -833,7 +826,7 @@ export default function App() {
                       target="_blank"
                       rel="noreferrer"
                     >
-                      @escolasesi.chapeco â†-
+                      @escolasesi.chapeco ↗
                     </a>
                   </p>
                 </div>
@@ -846,7 +839,7 @@ export default function App() {
           <Page
             title="WEST SHARKS FTC"
             subtitle=""
-            kicker="EQUIPE DE ROBÃ“TICA"
+            kicker="EQUIPE DE ROBÓTICA"
             theme="robotics-team"
             graph={assetPath('/assets/westsharks/logo-westsharks.png')}
           >
@@ -857,30 +850,30 @@ export default function App() {
                   src={assetPath('/assets/westsharks/logo-westsharks.png')}
                   alt="West Sharks FTC"
                 />
-                <span>FIRST TECH CHALLENGE Â· #24823</span>
-                <h2>Engenharia, estratÃ©gia e colaboraÃ§Ã£o dentro e fora da arena.</h2>
+                <span>FIRST TECH CHALLENGE · #24823</span>
+                <h2>Engenharia, estratégia e colaboração dentro e fora da arena.</h2>
                 <p>
-                  A West Sharks representa a Escola SESI ChapecÃ³ em desafios da FIRST Tech
-                  Challenge. Os estudantes projetam, constroem, programam e testam robÃ´s
-                  enquanto desenvolvem comunicaÃ§Ã£o, lideranÃ§a e trabalho em equipe.
+                  A West Sharks representa a Escola SESI Chapecó em desafios da FIRST Tech
+                  Challenge. Os estudantes projetam, constroem, programam e testam robôs
+                  enquanto desenvolvem comunicação, liderança e trabalho em equipe.
                 </p>
                 <div className="robotics-links">
                   <a href="https://www.westsharksftc.com/" target="_blank" rel="noreferrer">
-                    Site da equipe â†-
+                    Site da equipe ↗
                   </a>
                   <a
                     href="https://www.instagram.com/west.sharks.robotica/"
                     target="_blank"
                     rel="noreferrer"
                   >
-                    Instagram â†-
+                    Instagram ↗
                   </a>
                 </div>
               </div>
               <img
                 className="robotics-photo"
                 src={assetPath('/assets/westsharks/westsharksftc.jpg')}
-                alt="RobÃ´ da equipe West Sharks FTC"
+                alt="Robô da equipe West Sharks FTC"
               />
             </section>
             <section className="robotics-cards">
@@ -888,24 +881,24 @@ export default function App() {
                 <b>01</b>
                 <h3>Quem somos</h3>
                 <p>
-                  Uma equipe de estudantes que transforma problemas em soluÃ§Ãµes por meio de
-                  pesquisa, prototipagem e cooperaÃ§Ã£o.
+                  Uma equipe de estudantes que transforma problemas em soluções por meio de
+                  pesquisa, prototipagem e cooperação.
                 </p>
               </article>
               <article>
                 <b>02</b>
                 <h3>Temporada BIOBUZZ</h3>
                 <p>
-                  Na temporada 2026â€“2027, o desafio BIOBUZZ mobiliza a equipe na criaÃ§Ã£o de
-                  soluÃ§Ãµes de engenharia para uma nova arena competitiva.
+                  Na temporada 2026-2027, o desafio BIOBUZZ mobiliza a equipe na criação de
+                  soluções de engenharia para uma nova arena competitiva.
                 </p>
               </article>
               <article>
                 <b>03</b>
-                <h3>ProtÃ³tipo RI30H</h3>
+                <h3>Protótipo RI30H</h3>
                 <p>
-                  Na sala F-09, a equipe apresenta o protÃ³tipo construÃ­do em 30 horas,
-                  explica suas escolhas mecÃ¢nicas e de programaÃ§Ã£o e demonstra o robÃ´ em uma
+                  Na sala F-09, a equipe apresenta o protótipo construído em 30 horas,
+                  explica suas escolhas mecânicas e de programação e demonstra o robô em uma
                   arena de testes.
                 </p>
               </article>
@@ -915,27 +908,27 @@ export default function App() {
 
         {view === 'questionario' && (
           <Page
-            title="QuestionÃ¡rio"
-            subtitle="Conte como foi sua experiÃªncia e ajude a tornar a prÃ³xima Mostra ainda melhor."
-            kicker="SUA OPINIÃƒO IMPORTA"
+            title="Questionário"
+            subtitle="Conte como foi sua experiência e ajude a tornar a próxima Mostra ainda melhor."
+            kicker="SUA OPINIÃO IMPORTA"
             theme="survey"
             graph={assetPath('/assets/grafismo-linguagens.svg')}
           >
             <section className="survey-page">
               <div className="survey-heading">
-                <h2>{visitorName ? `${visitorName}, queremos ouvir vocÃª.` : 'Queremos ouvir vocÃª.'}</h2>
+                <h2>{visitorName ? `${visitorName}, queremos ouvir você.` : 'Queremos ouvir você.'}</h2>
                 <p>
-                  Responda Ã s perguntas abaixo. As respostas sÃ£o registradas diretamente no Google
-                  FormulÃ¡rios.
+                  Responda às perguntas abaixo. As respostas são registradas diretamente no Google
+                  Formulários.
                 </p>
               </div>
               <div className="survey-frame">
                 <iframe
-                  title="AvaliaÃ§Ã£o da Mostra STEAM 2026"
+                  title="Avaliação da Mostra STEAM 2026"
                   src="https://docs.google.com/forms/d/e/1FAIpQLSetraOoQiO27VmVA1IGBD7IkLbPiy4Qqs_SLjq2UQToh_1CFQ/viewform?embedded=true"
                   loading="lazy"
                 >
-                  Carregandoâ€¦
+                  Carregando…
                 </iframe>
               </div>
               <div className="survey-actions">
@@ -944,7 +937,7 @@ export default function App() {
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Abrir formulÃ¡rio em nova guia â†-
+                  Abrir formulário em nova guia ↗
                 </a>
               </div>
             </section>
@@ -1012,7 +1005,7 @@ function Page({
         <h1>
           {theme === 'steam' ? (
             <>
-              O que Ã©{' '}
+              O que é{' '}
               <span className="steam-word">
                 <i>S</i>
                 <i>T</i>
@@ -1033,4 +1026,3 @@ function Page({
     </div>
   );
 }
-

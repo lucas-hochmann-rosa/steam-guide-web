@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 
 export default function TeacherModal({ teacher, onClose }) {
   if (!teacher) return null;
@@ -17,7 +17,7 @@ export default function TeacherModal({ teacher, onClose }) {
           onClick={onClose}
           aria-label="Fechar biografia"
         >
-          Ã-
+          ×
         </button>
         <div className="teacher-profile">
           <img
@@ -39,11 +39,10 @@ export default function TeacherModal({ teacher, onClose }) {
             target="_blank"
             rel="noreferrer"
           >
-            Acessar portfÃ³lio
+            Acessar portfólio
           </a>
         )}
       </article>
     </div>
   );
 }
-

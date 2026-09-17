@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { assetPath } from '../utils/assetPath';
 
 export default function Footer({ onOpenEvaluations }) {
@@ -10,7 +10,7 @@ export default function Footer({ onOpenEvaluations }) {
           alt="Escola SESI"
         />
       </div>
-      <p>Guia Digital Â· Mostra STEAM 2026</p>
+      <p>Guia Digital · Mostra STEAM 2026</p>
       {onOpenEvaluations && (
         <button
           onClick={onOpenEvaluations}
@@ -25,10 +25,9 @@ export default function Footer({ onOpenEvaluations }) {
             fontWeight: 'bold',
           }}
         >
-          Exportar AvaliaÃ§Ãµes â†-
+          Exportar Avaliações ↗
         </button>
       )}
     </footer>
   );
 }
-

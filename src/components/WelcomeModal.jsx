@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { assetPath } from '../utils/assetPath';
 
 export default function WelcomeModal({ onSaveName }) {

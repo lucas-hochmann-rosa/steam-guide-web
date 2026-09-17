@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { exportEvaluationsAsCsv, exportEvaluationsAsJson } from '../services/evaluationStorage';
 
 export default function EvaluationsModal({ isOpen, onClose, evaluations = [], rooms = [] }) {
@@ -21,11 +21,11 @@ export default function EvaluationsModal({ isOpen, onClose, evaluations = [], ro
       <div className="evaluations-card" onClick={(e) => e.stopPropagation()}>
         <div className="evaluations-head">
           <div>
-            <span className="eyebrow dark">REGISTRO DE VISITAÃ‡ÃƒO</span>
-            <h2 id="evaluations-title">AvaliaÃ§Ãµes das Salas</h2>
+            <span className="eyebrow dark">REGISTRO DE VISITAÇÃO</span>
+            <h2 id="evaluations-title">Avaliações das Salas</h2>
           </div>
           <button className="evaluations-close" onClick={onClose} aria-label="Fechar painel">
-            Ã-
+            ×
           </button>
         </div>
 
@@ -36,8 +36,8 @@ export default function EvaluationsModal({ isOpen, onClose, evaluations = [], ro
               <small>Salas avaliadas</small>
             </div>
             <div>
-              <strong>â˜… {avgRating}</strong>
-              <small>MÃ©dia das notas</small>
+              <strong>★ {avgRating}</strong>
+              <small>Média das notas</small>
             </div>
             <div>
               <strong>{Math.round((evaluatedCount / totalCount) * 100)}%</strong>
@@ -48,7 +48,7 @@ export default function EvaluationsModal({ isOpen, onClose, evaluations = [], ro
           {evaluations.length === 0 ? (
             <div className="evaluations-empty">
               <p>Nenhuma sala foi avaliada ainda neste dispositivo.</p>
-              <small>Conforme vocÃª visitar os espaÃ§os e atribuir estrelas, as avaliaÃ§Ãµes serÃ£o salvas aqui.</small>
+              <small>Conforme você visitar os espaços e atribuir estrelas, as avaliações serão salvas aqui.</small>
             </div>
           ) : (
             <div className="evaluations-list">
@@ -57,7 +57,7 @@ export default function EvaluationsModal({ isOpen, onClose, evaluations = [], ro
                   <div className="eval-item-head">
                     <h4>{ev.roomTitle || ev.roomId}</h4>
                     <span className="eval-stars">
-                      {'â˜…'.repeat(ev.rating || 0)}{'â˜†'.repeat(5 - (ev.rating || 0))}
+                      {'★'.repeat(ev.rating || 0)}{'☆'.repeat(5 - (ev.rating || 0))}
                     </span>
                   </div>
                   {ev.comment && (
@@ -81,7 +81,7 @@ export default function EvaluationsModal({ isOpen, onClose, evaluations = [], ro
               disabled={evaluations.length === 0}
               title="Baixar planilha CSV para Excel / Google Sheets"
             >
-              ðŸ“¥ Exportar CSV
+              📥 Exportar CSV
             </button>
             <button
               className="eval-btn-export"
@@ -89,7 +89,7 @@ export default function EvaluationsModal({ isOpen, onClose, evaluations = [], ro
               disabled={evaluations.length === 0}
               title="Baixar arquivo JSON com todos os dados"
             >
-              ðŸ“„ Exportar JSON
+              📄 Exportar JSON
             </button>
           </div>
 
@@ -101,4 +101,3 @@ export default function EvaluationsModal({ isOpen, onClose, evaluations = [], ro
     </div>
   );
 }
-

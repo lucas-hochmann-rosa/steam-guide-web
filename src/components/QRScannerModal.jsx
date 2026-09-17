@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 export default function QRScannerModal({ isOpen, onClose, onDetected }) {
   const videoRef = useRef(null);
@@ -46,7 +46,7 @@ export default function QRScannerModal({ isOpen, onClose, onDetected }) {
       const Detector = window.BarcodeDetector;
       if (!Detector) {
         setError(
-          'A cÃ¢mera abriu, mas este navegador nÃ£o reconhece QR Codes nativamente. Use o leitor de QR padrÃ£o do seu celular.'
+          'A câmera abriu, mas este navegador não reconhece QR Codes nativamente. Use o leitor de QR padrão do seu celular.'
         );
         return;
       }
@@ -61,14 +61,14 @@ export default function QRScannerModal({ isOpen, onClose, onDetected }) {
           try {
             id = new URL(raw).searchParams.get('local') || raw;
           } catch {
-            // Se nÃ£o for URL, usa o prÃ³prio texto lido
+            // Se não for URL, usa o próprio texto lido
           }
           stopStream();
           onDetected(id.toLowerCase());
         }
       }, 500);
     } catch {
-      setError('NÃ£o foi possÃ­vel acessar a cÃ¢mera. Autorize o uso da cÃ¢mera no navegador e tente novamente.');
+      setError('Não foi possível acessar a câmera. Autorize o uso da câmera no navegador e tente novamente.');
     }
   };
 
@@ -96,7 +96,7 @@ export default function QRScannerModal({ isOpen, onClose, onDetected }) {
     >
       <div className="scanner-sheet" onClick={(e) => e.stopPropagation()}>
         <div className="scanner-head">
-          <p className="scanner-hint">Aponte a cÃ¢mera para o QR Code da sala.</p>
+          <p className="scanner-hint">Aponte a câmera para o QR Code da sala.</p>
           <button
             onClick={() => {
               stopStream();
@@ -104,7 +104,7 @@ export default function QRScannerModal({ isOpen, onClose, onDetected }) {
             }}
             aria-label="Fechar leitor"
           >
-            Ã-
+            ×
           </button>
         </div>
 
@@ -115,11 +115,10 @@ export default function QRScannerModal({ isOpen, onClose, onDetected }) {
         {error && (
           <div className="scanner-error">
             <p>{error}</p>
-            <button onClick={startScanner}>Tentar liberar a cÃ¢mera novamente</button>
+            <button onClick={startScanner}>Tentar liberar a câmera novamente</button>
           </div>
         )}
       </div>
     </div>
   );
 }
-

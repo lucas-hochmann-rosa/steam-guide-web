@@ -1,4 +1,4 @@
-﻿import { assetPath } from '../utils/assetPath';
+import { assetPath } from '../utils/assetPath';
 
 export const rooms = [
   {

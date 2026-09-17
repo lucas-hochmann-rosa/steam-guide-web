@@ -14,7 +14,6 @@ export function initializeStorage() {
 
   const currentVersion = localStorage.getItem(STORAGE_KEYS.VERSION);
   if (currentVersion !== STORAGE_VERSION) {
-    // Migra avaliações antigas se existirem antes de atualizar a versão
     const oldRatings = JSON.parse(localStorage.getItem(STORAGE_KEYS.RATINGS) || '{}');
     const oldComments = JSON.parse(localStorage.getItem(STORAGE_KEYS.COMMENTS) || '{}');
     const visitor = localStorage.getItem(STORAGE_KEYS.VISITOR_NAME) || 'Visitante';
@@ -42,7 +41,7 @@ export function getVisitorName() {
 }
 
 export function setVisitorName(name) {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined') return '';
   const trimmed = (name || '').trim();
   localStorage.setItem(STORAGE_KEYS.VISITOR_NAME, trimmed);
   return trimmed;
@@ -68,7 +67,6 @@ export function getAllEvaluations() {
     const raw = localStorage.getItem(STORAGE_KEYS.EVALUATIONS);
     if (raw) return JSON.parse(raw);
 
-    // Fallback retrocompatível se o novo array ainda não foi gerado
     const ratings = JSON.parse(localStorage.getItem(STORAGE_KEYS.RATINGS) || '{}');
     const comments = JSON.parse(localStorage.getItem(STORAGE_KEYS.COMMENTS) || '{}');
     const visitor = getVisitorName() || 'Visitante';
@@ -90,7 +88,7 @@ export function getAllEvaluations() {
 export function saveRoomEvaluation({ roomId, roomTitle, rating, comment, visitorName }) {
   if (typeof window === 'undefined') return null;
 
-  const currentVisitor = visitorName || getVisitorName() || 'Visitante anônimo';
+  const currentVisitor = visitorName || getVisitorName() || 'Visitante';
   const evaluations = getAllEvaluations();
   const now = new Date().toISOString();
 
@@ -111,10 +109,8 @@ export function saveRoomEvaluation({ roomId, roomTitle, rating, comment, visitor
     evaluations.push(evaluationRecord);
   }
 
-  // Persiste na chave rica
   localStorage.setItem(STORAGE_KEYS.EVALUATIONS, JSON.stringify(evaluations));
 
-  // Mantém retrocompatibilidade com chaves legadas
   try {
     const ratings = JSON.parse(localStorage.getItem(STORAGE_KEYS.RATINGS) || '{}');
     ratings[roomId] = Number(rating);
@@ -135,7 +131,6 @@ export function saveRoomEvaluation({ roomId, roomTitle, rating, comment, visitor
     console.warn('Erro ao atualizar chaves legadas:', err);
   }
 
-  // Tenta sincronizar remotamente se estiver configurado
   syncEvaluationRemote(evaluationRecord).catch(() => {});
 
   return evaluationRecord;
@@ -221,7 +216,6 @@ export async function syncEvaluationRemote(evaluation) {
       return await response.json();
     }
   } catch {
-    // Modo offline resiliente: ignora silenciosamente em caso de ausência de backend
     return null;
   }
 }
