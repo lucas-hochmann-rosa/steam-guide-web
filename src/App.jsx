@@ -402,17 +402,23 @@ export default function App() {
                     return (
                       <article
                         key={room.id}
-                        className={done ? 'visited' : ''}
+                        className={`room-card-clickable ${done ? 'visited' : ''}`}
+                        onClick={() => handleOpenRoom(room.id)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleOpenRoom(room.id);
+                          }
+                        }}
+                        aria-label={`Conhecer ${room.room}: ${room.title}`}
                         style={{
                           '--accent': room.accent,
                           '--soft': room.soft,
                         }}
                       >
-                        <button
-                          className="room-open-visual"
-                          onClick={() => handleOpenRoom(room.id)}
-                          aria-label={`Conhecer ${room.room}: ${room.title}`}
-                        >
+                        <div className="room-open-visual" aria-hidden="true">
                           {room.images[0] ? (
                             <img
                               className="room-thumb"
@@ -425,7 +431,7 @@ export default function App() {
                               <img src={room.icon} alt="" />
                             </span>
                           )}
-                        </button>
+                        </div>
 
                         <div className="room-card-body">
                           <div className="visit-head">
@@ -447,9 +453,7 @@ export default function App() {
                           </div>
 
                           <h3>
-                            <button onClick={() => handleOpenRoom(room.id)}>
-                              {room.title}
-                            </button>
+                            <span className="room-card-title">{room.title}</span>
                           </h3>
                           <p>{room.area}</p>
 
@@ -457,8 +461,13 @@ export default function App() {
 
                           {room.teamLogo && (
                             <button
+                              type="button"
                               className="room-team-badge card-badge"
-                              onClick={() => handleNavigate('robotica')}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleNavigate('robotica');
+                              }}
+                              aria-label="Conhecer a equipe de robótica West Sharks"
                             >
                               <img src={room.teamLogo} alt="" />
                               <span>
@@ -475,8 +484,12 @@ export default function App() {
                             >
                               {teachersForRoom.map((teacher) => (
                                 <button
+                                  type="button"
                                   key={teacher.name}
-                                  onClick={() => setSelectedTeacher(teacher)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedTeacher(teacher);
+                                  }}
                                   aria-label={`Ver biografia de ${teacher.name}`}
                                 >
                                   <img src={teacher.image} alt="" />
@@ -491,12 +504,9 @@ export default function App() {
                             </span>
                           )}
 
-                          <button
-                            className="open-space"
-                            onClick={() => handleOpenRoom(room.id)}
-                          >
+                          <span className="open-space" aria-hidden="true">
                             {done ? 'Ver novamente' : 'Conhecer a sala'} →
-                          </button>
+                          </span>
                         </div>
                       </article>
                     );

@@ -564,3 +564,132 @@ footer:before{content:"";position:absolute;inset:0 0 auto;height:6px;background:
   }
 }
 
+/* ==========================================================================
+   BARRA DE SCROLL MODERNA, FINA E DISCRETA (GLOBAL E MODAIS)
+   Substitui a barra padrao do navegador por um design elegante e sutil
+   ========================================================================== */
+
+/* Padrao moderno CSS (Firefox e navegadores modernos) */
+html,
+body,
+*,
+*::before,
+*::after {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(16, 42, 67, 0.22) transparent;
+}
+
+/* Motores WebKit e Chromium (Chrome, Edge, Safari, Opera) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(16, 42, 67, 0.22);
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 42, 67, 0.45);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: rgba(16, 42, 67, 0.65);
+}
+
+/* Remove completamente os botoes de seta nativos do Windows no topo e na base */
+::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Ajustes especificos nos modais e poup ups para afastar o scroll das bordas arredondadas */
+.room-detail,
+.room-detail-backdrop,
+.teacher-modal > article,
+.completion-modal > section,
+.scanner-modal,
+.welcome-screen {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(16, 42, 67, 0.25) transparent;
+}
+
+.room-detail::-webkit-scrollbar-track,
+.teacher-modal > article::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 14px 0;
+}
+
+.room-detail::-webkit-scrollbar-thumb,
+.teacher-modal > article::-webkit-scrollbar-thumb {
+  background: rgba(16, 42, 67, 0.25);
+  border-radius: 9999px;
+}
+
+.room-detail::-webkit-scrollbar-thumb:hover,
+.teacher-modal > article::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 42, 67, 0.5);
+}
+
+/* ==========================================================================
+   CARDS DE SALAS TOTALMENTE CLICAVEIS (SEU PERCURSO)
+   Permite tocar/clicar em qualquer parte do card para abrir a sala
+   ========================================================================== */
+.room-card-clickable {
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.room-card-clickable:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(16, 42, 67, 0.12);
+  border-color: color-mix(in srgb, var(--accent) 55%, #dbe5e3);
+}
+
+.room-card-clickable:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.room-card-clickable .room-open-visual {
+  cursor: pointer;
+}
+
+.room-card-clickable .room-card-title {
+  color: var(--ink);
+  transition: color 0.15s ease;
+}
+
+.room-card-clickable:hover .room-card-title {
+  color: var(--accent);
+}
+
+.room-card-clickable .open-space {
+  display: inline-block;
+  margin-top: auto;
+  padding-top: 10px;
+  color: var(--accent);
+  font-weight: 900;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.room-card-clickable:hover .open-space {
+  text-decoration: underline;
+  transform: translateX(3px);
+}
+
+
