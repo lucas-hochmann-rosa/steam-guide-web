@@ -1,4 +1,4 @@
-# 🏛️ Guia Digital
+# 🏛️ Guia Digital - Mostra STEAM
 
 <p align="center">
   <a href="https://github.com/lucas-hochmann-rosa/steam-guide-web">
@@ -20,7 +20,7 @@
 
 <p align="center">🇧🇷 Português · <a href="README.en.md">🇺🇸 English</a></p>
 
-> Guia oficial e interativo de visitação criado para a **Mostra STEAM 2026** da Escola SESI Chapecó.
+> Guia interativo de visitação criado para a **Mostra STEAM 2026** da Escola SESI Chapecó.
 
 ---
 
@@ -54,8 +54,8 @@ O projeto foi desenvolvido por **Lucas Hochmann Rosa**.
 
 - Acompanhamento interativo do percurso de visitação com indicador percentual de progresso.
 - Leitor de QR Code integrado à câmera do dispositivo para abertura direta da sala.
-- Sistema estruturado de salvamento de avaliações por estrelas e comentários por sala.
-- Exportação de dados das avaliações em formatos CSV (compatível com Excel) e JSON.
+- Sistema estruturado de avaliações com rostinhos (emojis), comentários e sincronização em tempo real com o Google Planilhas.
+- Arquitetura resiliente com armazenamento local (offline-first) e reenvio automático de avaliações pendentes.
 - Mapa 2D do campus com marcadores clicáveis e detalhamento arquitetônico do Bloco F.
 - Catálogo da equipe pedagógica com biografias, áreas de atuação e portfólios.
 - Espaço dedicado à equipe de robótica West Sharks FTC #24823 e à temporada BIOBUZZ.

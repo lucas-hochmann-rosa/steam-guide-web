@@ -52,8 +52,20 @@ function doPost(e) {
     const roomId = String(payload.roomId || '').trim();
     const rating = Number(payload.rating);
 
-    if (!roomId || isNaN(rating) || rating < 1 || rating > 5) {
-      return jsonResponse({ success: false, error: 'Dados inválidos: roomId e rating (1 a 5) são obrigatórios.' }, 400);
+    const RATING_LABELS = {
+      1: 'Ruim',
+      2: 'Regular',
+      3: 'Boa',
+      4: 'Muito boa',
+      5: 'Excelente'
+    };
+
+    const displayRating = String(
+      payload.ratingLabel || RATING_LABELS[rating] || payload.rating || ''
+    ).trim();
+
+    if (!roomId || !displayRating) {
+      return jsonResponse({ success: false, error: 'Dados inválidos: roomId e avaliação são obrigatórios.' }, 400);
     }
 
     const visitorId = String(payload.visitorId || 'anonymous').trim();
@@ -99,7 +111,7 @@ function doPost(e) {
         visitorName,
         roomId,
         roomTitle,
-        rating,
+        displayRating,
         comment
       ]]);
 
@@ -118,7 +130,7 @@ function doPost(e) {
         visitorName,
         roomId,
         roomTitle,
-        rating,
+        displayRating,
         comment
       ]);
 
@@ -172,8 +184,17 @@ function formatHeaderRow(sheet) {
 }
 
 /**
- * Função opcional para gerar a aba 'Resultados' com fórmulas prontas
- * Pode ser executada no menu do Apps Script a qualquer momento pela coordenação!
+ * Adiciona menu no topo da planilha do Google ao abrir o arquivo
+ */
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu('Mostra STEAM 2026')
+    .addItem('Gerar / Atualizar Aba de Resultados e Gráficos', 'criarAbaResultados')
+    .addToUi();
+}
+
+/**
+ * Cria a aba 'Resultados' com tabelas sumarizadas, fórmulas dinâmicas e gráficos
  */
 function criarAbaResultados() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -184,38 +205,79 @@ function criarAbaResultados() {
     sheetResultados.clear();
   }
 
-  const cabecalho = [['DASHBOARD DE RESULTADOS - MOSTRA STEAM 2026', '']];
-  sheetResultados.getRange('A1:B1').setValues(cabecalho);
-  sheetResultados.getRange('A1:B1').setFontWeight('bold').setBackground('#0754A6').setFontColor('#ffffff');
+  // Título do Dashboard
+  sheetResultados.getRange('A1:C1').merge();
+  sheetResultados.getRange('A1').setValue('DASHBOARD DE RESULTADOS - MOSTRA STEAM 2026')
+    .setFontWeight('bold')
+    .setFontSize(13)
+    .setBackground('#0754A6')
+    .setFontColor('#ffffff')
+    .setHorizontalAlignment('center');
 
-  const metricasGerais = [
-    ['Métrica', 'Valor'],
-    ['Total de Avaliações Recebidas', '=COUNTA(Avaliações!A2:A)'],
-    ['Média Geral das Notas (1 a 5)', '=IFERROR(AVERAGE(Avaliações!G2:G); "0.0")'],
-    ['Notas 5 (Excelente)', '=COUNTIF(Avaliações!G2:G; 5)'],
-    ['Notas 4 (Muito boa)', '=COUNTIF(Avaliações!G2:G; 4)'],
-    ['Notas 3 (Boa)', '=COUNTIF(Avaliações!G2:G; 3)'],
-    ['Notas 2 (Regular)', '=COUNTIF(Avaliações!G2:G; 2)'],
-    ['Notas 1 (Ruim)', '=COUNTIF(Avaliações!G2:G; 1)'],
+  // Tabela 1: Distribuição de Satisfação (Geral)
+  const satisfacao = [
+    ['Avaliação', 'Total de Votos'],
+    ['Excelente', '=COUNTIF(Avaliações!G2:G, "Excelente") + COUNTIF(Avaliações!G2:G, 5)'],
+    ['Muito boa', '=COUNTIF(Avaliações!G2:G, "Muito boa") + COUNTIF(Avaliações!G2:G, 4)'],
+    ['Boa', '=COUNTIF(Avaliações!G2:G, "Boa") + COUNTIF(Avaliações!G2:G, 3)'],
+    ['Regular', '=COUNTIF(Avaliações!G2:G, "Regular") + COUNTIF(Avaliações!G2:G, 2)'],
+    ['Ruim', '=COUNTIF(Avaliações!G2:G, "Ruim") + COUNTIF(Avaliações!G2:G, 1)'],
+    ['Total Geral', '=SUM(B4:B8)']
   ];
-  sheetResultados.getRange('A3:B10').setValues(metricasGerais);
-  sheetResultados.getRange('A3:B3').setFontWeight('bold').setBackground('#e5eceb');
+  sheetResultados.getRange('A3:B9').setValues(satisfacao);
+  sheetResultados.getRange('A3:B3').setFontWeight('bold').setBackground('#102A43').setFontColor('#ffffff');
+  sheetResultados.getRange('A9:B9').setFontWeight('bold').setBackground('#e9f3f9');
 
-  // Médias por Sala
+  // Tabela 2: Resumo de Avaliações por Sala / Espaço Oficial da Mostra
   const salas = [
-    ['ID da Sala', 'Espaço', 'Qtd. Avaliações', 'Média da Sala'],
-    ['f-01-f-02', 'Robótica FIRST LEGO League e F1 in Schools', '=COUNTIF(Avaliações!E2:E; "f-01-f-02")', '=IFERROR(AVERAGEIF(Avaliações!E2:E; "f-01-f-02"; Avaliações!G2:G); "-")'],
-    ['f-05', 'Física e Eletromagnetismo', '=COUNTIF(Avaliações!E2:E; "f-05")', '=IFERROR(AVERAGEIF(Avaliações!E2:E; "f-05"; Avaliações!G2:G); "-")'],
-    ['f-08', 'Galeria de Arte e Linguagens', '=COUNTIF(Avaliações!E2:E; "f-08")', '=IFERROR(AVERAGEIF(Avaliações!E2:E; "f-08"; Avaliações!G2:G); "-")'],
-    ['f-09', 'West Sharks FTC #24823', '=COUNTIF(Avaliações!E2:E; "f-09")', '=IFERROR(AVERAGEIF(Avaliações!E2:E; "f-09"; Avaliações!G2:G); "-")'],
-    ['f-13', 'Biologia e Meio Ambiente', '=COUNTIF(Avaliações!E2:E; "f-13")', '=IFERROR(AVERAGEIF(Avaliações!E2:E; "f-13"; Avaliações!G2:G); "-")'],
-    ['f-20', 'Matemática e Modelagem 3D', '=COUNTIF(Avaliações!E2:E; "f-20")', '=IFERROR(AVERAGEIF(Avaliações!E2:E; "f-20"; Avaliações!G2:G); "-")'],
-    ['b-05', 'Química e Transformações de Materiais', '=COUNTIF(Avaliações!E2:E; "b-05")', '=IFERROR(AVERAGEIF(Avaliações!E2:E; "b-05"; Avaliações!G2:G); "-")'],
-    ['b-07', 'Mundo do Trabalho e Empreendedorismo', '=COUNTIF(Avaliações!E2:E; "b-07")', '=IFERROR(AVERAGEIF(Avaliações!E2:E; "b-07"; Avaliações!G2:G); "-")'],
-    ['a-maker', 'Espaço Maker e Inovação', '=COUNTIF(Avaliações!E2:E; "a-maker")', '=IFERROR(AVERAGEIF(Avaliações!E2:E; "a-maker"; Avaliações!G2:G); "-")'],
+    ['ID da Sala', 'Espaço / Sala', 'Total de Avaliações'],
+    ['f-08', 'Galeria de arte', '=COUNTIF(Avaliações!E2:E, "f-08")'],
+    ['f-13', 'Globalização em Arte: Arte, Geografia e Inglês', '=COUNTIF(Avaliações!E2:E, "f-13")'],
+    ['f-01-f-02', 'Jogos, desafios, charadas e enigmas matemáticos', '=COUNTIF(Avaliações!E2:E, "f-01-f-02")'],
+    ['f-05', 'Engenheiro por um dia', '=COUNTIF(Avaliações!E2:E, "f-05")'],
+    ['f-20', 'O Caminho dos Direitos', '=COUNTIF(Avaliações!E2:E, "f-20")'],
+    ['b-03-b-04', 'Experimentos no laboratório', '=COUNTIF(Avaliações!E2:E, "b-03-b-04")'],
+    ['corredor-f', 'Oficina de fotografia e audiovisual', '=COUNTIF(Avaliações!E2:E, "corredor-f")'],
+    ['f-09', 'West Sharks FTC: robô da temporada BIOBUZZ', '=COUNTIF(Avaliações!E2:E, "f-09")'],
+    ['quadra', 'Prática de movimento e integração', '=COUNTIF(Avaliações!E2:E, "quadra")']
   ];
-  sheetResultados.getRange('A13:D22').setValues(salas);
-  sheetResultados.getRange('A13:D13').setFontWeight('bold').setBackground('#e5eceb');
+  sheetResultados.getRange('A12:C21').setValues(salas);
+  sheetResultados.getRange('A12:C12').setFontWeight('bold').setBackground('#227C47').setFontColor('#ffffff');
 
-  sheetResultados.autoResizeColumns(1, 4);
+  // Remove gráficos antigos se já existirem na aba
+  const existingCharts = sheetResultados.getCharts();
+  for (let i = 0; i < existingCharts.length; i++) {
+    sheetResultados.removeChart(existingCharts[i]);
+  }
+
+  // Gráfico 1: Distribuição de Satisfação (Gráfico de Colunas)
+  const chartRangeSatisfacao = sheetResultados.getRange('A3:B8');
+  const chartSatisfacao = sheetResultados.newChart()
+    .asColumnChart()
+    .addRange(chartRangeSatisfacao)
+    .setPosition(3, 5, 0, 0)
+    .setOption('title', 'Distribuição de Satisfação dos Visitantes')
+    .setOption('colors', ['#0754A6'])
+    .setOption('legend', { position: 'none' })
+    .setOption('hAxis', { title: 'Avaliação' })
+    .setOption('vAxis', { title: 'Total de Votos', minValue: 0 })
+    .build();
+
+  sheetResultados.insertChart(chartSatisfacao);
+
+  // Gráfico 2: Participação por Espaço (Gráfico de Barras Horizontais)
+  const chartRangeSalas = sheetResultados.getRange('B12:C21');
+  const chartSalas = sheetResultados.newChart()
+    .asBarChart()
+    .addRange(chartRangeSalas)
+    .setPosition(20, 5, 0, 0)
+    .setOption('title', 'Avaliações Registradas por Espaço')
+    .setOption('colors', ['#227C47'])
+    .setOption('legend', { position: 'none' })
+    .setOption('hAxis', { title: 'Quantidade de Avaliações', minValue: 0 })
+    .build();
+
+  sheetResultados.insertChart(chartSalas);
+
+  sheetResultados.autoResizeColumns(1, 3);
 }

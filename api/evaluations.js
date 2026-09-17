@@ -21,14 +21,24 @@ export default async function handler(req, res) {
   }
 
   try {
+    const RATING_LABELS = {
+      1: 'Ruim',
+      2: 'Regular',
+      3: 'Boa',
+      4: 'Muito boa',
+      5: 'Excelente',
+    };
+
     const body = req.body || {};
     const {
       roomId,
       roomTitle,
       visitorName,
+      visitorEmail,
       visitorId,
       evaluationId,
       rating,
+      ratingLabel,
       comment,
       clientUpdatedAt,
     } = body;
@@ -38,10 +48,17 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Campo roomId inválido ou ausente (máximo 50 caracteres).' });
     }
 
-    // 2. Validação de rating (nota inteira de 1 a 5)
-    const numRating = Number(rating);
+    // 2. Validação de rating (nota inteira de 1 a 5 ou rótulo textual)
+    let numRating = Number(rating);
     if (!Number.isInteger(numRating) || numRating < 1 || numRating > 5) {
-      return res.status(400).json({ error: 'Campo rating inválido: informe um número inteiro de 1 a 5.' });
+      const matchKey = Object.keys(RATING_LABELS).find(
+        (key) => RATING_LABELS[key].toLowerCase() === String(rating || ratingLabel || '').toLowerCase()
+      );
+      if (matchKey) {
+        numRating = Number(matchKey);
+      } else {
+        return res.status(400).json({ error: 'Campo rating inválido: informe um número inteiro de 1 a 5.' });
+      }
     }
 
     // 3. Sanitização e limites razoáveis de texto
@@ -55,9 +72,15 @@ export default async function handler(req, res) {
     const cleanVisitorName = typeof visitorName === 'string' && visitorName.trim()
       ? visitorName.trim().substring(0, 100)
       : 'Visitante';
+    const cleanVisitorEmail = typeof visitorEmail === 'string' && visitorEmail.trim()
+      ? visitorEmail.trim().substring(0, 100)
+      : '';
     const cleanRoomTitle = typeof roomTitle === 'string' && roomTitle.trim()
       ? roomTitle.trim().substring(0, 150)
       : cleanRoomId;
+    const cleanRatingLabel = typeof ratingLabel === 'string' && ratingLabel.trim()
+      ? ratingLabel.trim().substring(0, 50)
+      : (RATING_LABELS[numRating] || String(numRating));
     const cleanComment = typeof comment === 'string'
       ? comment.trim().substring(0, 1000)
       : '';
@@ -69,9 +92,11 @@ export default async function handler(req, res) {
       evaluationId: cleanEvaluationId,
       visitorId: cleanVisitorId,
       visitorName: cleanVisitorName,
+      visitorEmail: cleanVisitorEmail,
       roomId: cleanRoomId,
       roomTitle: cleanRoomTitle,
       rating: numRating,
+      ratingLabel: cleanRatingLabel,
       comment: cleanComment,
       clientUpdatedAt: cleanClientUpdatedAt,
       receivedAt: new Date().toISOString(),

@@ -1,4 +1,4 @@
-# 🏛️ Digital Guide
+# 🏛️ Digital Guide – Mostra STEAM
 
 <p align="center">
   <a href="https://github.com/lucas-hochmann-rosa/steam-guide-web">
@@ -20,7 +20,7 @@
 
 <p align="center"><a href="README.md">🇧🇷 Português</a> · 🇺🇸 English</p>
 
-> Official and interactive digital visitation guide created for the **2026 STEAM Fair** at Escola SESI Chapecó.
+> Interactive digital visitation guide created for the **2026 STEAM Fair** at Escola SESI Chapecó.
 
 ---
 
@@ -54,8 +54,8 @@ The project was developed by **Lucas Hochmann Rosa**.
 
 - Interactive visitation journey with percentage-based progress tracking.
 - Device-camera integrated QR Code scanner for direct room discovery.
-- Structured room rating system with star ratings and optional comments.
-- Evaluation data export in CSV (Excel-compatible) and JSON formats.
+- Structured room evaluation system with emoji reactions, comments, and real-time Google Sheets synchronization.
+- Resilient offline-first architecture with automatic retry queue for pending evaluations.
 - 2D interactive campus map with clickable hotspots and detailed Block F floor layout.
 - Pedagogical team catalog with biographies, subject areas, and portfolios.
 - Dedicated showcase for the West Sharks FTC #24823 robotics team and the BIOBUZZ season.

@@ -1,6 +1,7 @@
 const STORAGE_KEYS = {
   VERSION: 'steam-storage-version',
   VISITOR_NAME: 'steam-visitor-name',
+  VISITOR_EMAIL: 'steam-visitor-email',
   VISITOR_ID: 'steam-visitor-id',
   VISITED: 'steam-visitados',
   RATINGS: 'steam-avaliacoes',
@@ -54,24 +55,71 @@ export function getVisitorName() {
   return localStorage.getItem(STORAGE_KEYS.VISITOR_NAME) || '';
 }
 
-export function setVisitorName(name) {
+export function getVisitorEmail() {
   if (typeof window === 'undefined') return '';
-  const trimmed = (name || '').trim();
-  localStorage.setItem(STORAGE_KEYS.VISITOR_NAME, trimmed);
-  return trimmed;
+  return localStorage.getItem(STORAGE_KEYS.VISITOR_EMAIL) || '';
+}
+
+export function generateCleanVisitorId(name, email) {
+  const cleanEmail = (email || '').trim().toLowerCase();
+  if (cleanEmail && cleanEmail.includes('@')) {
+    return cleanEmail;
+  }
+
+  const cleanName = (name || 'visitante')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '') || 'visitante';
+
+  const suffix = Math.random().toString(36).substring(2, 6);
+  return `${cleanName}_${suffix}`;
+}
+
+export function setVisitorProfile(name, email = '') {
+  if (typeof window === 'undefined') return { name: '', email: '', id: '' };
+  const trimmedName = (name || '').trim();
+  const trimmedEmail = (email || '').trim().toLowerCase();
+
+  localStorage.setItem(STORAGE_KEYS.VISITOR_NAME, trimmedName);
+  if (trimmedEmail) {
+    localStorage.setItem(STORAGE_KEYS.VISITOR_EMAIL, trimmedEmail);
+  }
+
+  const cleanId = generateCleanVisitorId(trimmedName, trimmedEmail);
+  localStorage.setItem(STORAGE_KEYS.VISITOR_ID, cleanId);
+
+  return { name: trimmedName, email: trimmedEmail, id: cleanId };
+}
+
+export function setVisitorName(name) {
+  return setVisitorProfile(name, getVisitorEmail()).name;
 }
 
 export function getVisitorId() {
-  if (typeof window === 'undefined') return 'visitor_server';
+  if (typeof window === 'undefined') return 'visitante_server';
   try {
     let id = localStorage.getItem(STORAGE_KEYS.VISITOR_ID);
-    if (!id) {
-      id = 'v_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now().toString(36);
+    const email = getVisitorEmail();
+    const name = getVisitorName();
+
+    // Se tiver e-mail e o ID ainda for o hash antigo v_..., migra para o e-mail
+    if (email && (!id || id.startsWith('v_'))) {
+      id = email;
+      localStorage.setItem(STORAGE_KEYS.VISITOR_ID, id);
+      return id;
+    }
+
+    // Se não tiver ID ou se o ID for o formato antigo v_..., migra para um ID amigável com o nome
+    if (!id || id.startsWith('v_')) {
+      id = generateCleanVisitorId(name, email);
       localStorage.setItem(STORAGE_KEYS.VISITOR_ID, id);
     }
     return id;
   } catch {
-    return 'v_fallback_' + Date.now().toString(36);
+    return 'visitante_' + Date.now().toString(36);
   }
 }
 
@@ -117,10 +165,13 @@ export function saveRoomEvaluation({ roomId, roomTitle, rating, comment, visitor
   if (typeof window === 'undefined') return null;
 
   const currentVisitor = visitorName || getVisitorName() || 'Visitante';
+  const visitorEmail = getVisitorEmail();
   const visitorId = getVisitorId();
   const evaluationId = `${visitorId}_${roomId}`;
   const evaluations = getAllEvaluations();
   const now = new Date().toISOString();
+  const ratingInfo = getRatingInfo(rating);
+  const ratingLabel = ratingInfo ? ratingInfo.label : String(rating);
 
   const existingIndex = evaluations.findIndex(
     (item) => item.evaluationId === evaluationId || item.roomId === roomId
@@ -133,7 +184,9 @@ export function saveRoomEvaluation({ roomId, roomTitle, rating, comment, visitor
     roomId,
     roomTitle: roomTitle || roomId,
     visitorName: currentVisitor,
+    visitorEmail,
     rating: Number(rating),
+    ratingLabel,
     comment: (comment || '').trim(),
     clientUpdatedAt: now,
     updatedAt: now,

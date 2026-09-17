@@ -12,7 +12,7 @@ import { team } from './data/team';
 import {
   initializeStorage,
   getVisitorName,
-  setVisitorName,
+  setVisitorProfile,
   getVisitedRooms,
   setVisitedRooms,
   getAllEvaluations,
@@ -138,9 +138,18 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleSaveVisitorName = (name) => {
-    setVisitorName(name);
-    setVisitorNameState(name);
+  const handleSaveVisitorName = (nameOrObj, maybeEmail) => {
+    let name = '';
+    let email = '';
+    if (typeof nameOrObj === 'object' && nameOrObj !== null) {
+      name = nameOrObj.name || '';
+      email = nameOrObj.email || '';
+    } else {
+      name = String(nameOrObj || '');
+      email = String(maybeEmail || '');
+    }
+    const profile = setVisitorProfile(name, email);
+    setVisitorNameState(profile.name);
     setWelcomeOpen(false);
   };
 
