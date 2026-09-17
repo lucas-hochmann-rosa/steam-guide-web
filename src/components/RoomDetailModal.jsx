@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { roomLocation } from '../data/rooms';
+import { RATING_OPTIONS, getRatingInfo } from '../services/evaluationStorage';
 
 export default function RoomDetailModal({
   room,
@@ -16,6 +17,21 @@ export default function RoomDetailModal({
   onGoRobotics,
   team = [],
 }) {
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.max(76, textareaRef.current.scrollHeight)}px`;
+    }
+  }, [comment, room]);
+
+  const handleCommentInput = (e) => {
+    onCommentChange(e.target.value);
+    e.target.style.height = 'auto';
+    e.target.style.height = `${Math.max(76, e.target.scrollHeight)}px`;
+  };
+
   if (!room) return null;
 
   const place = roomLocation(room);
@@ -28,21 +44,26 @@ export default function RoomDetailModal({
   const roomTeachers = teachersFor(room);
 
   return (
-    <section
-      className="active-visit room-detail"
+    <div
+      className="room-detail-backdrop"
+      onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-label={`Detalhes de ${room.room}: ${room.title}`}
-      style={{
-        '--accent': room.accent,
-        '--soft': room.soft,
-      }}
     >
-      <button
-        className="back-journey room-modal-close"
-        onClick={onClose}
-        aria-label="Fechar detalhes da sala"
+      <section
+        className="active-visit room-detail"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          '--accent': room.accent,
+          '--soft': room.soft,
+        }}
       >
+        <button
+          className="back-journey room-modal-close"
+          onClick={onClose}
+          aria-label="Fechar detalhes da sala"
+        >
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M6 6l12 12M18 6L6 18" />
         </svg>
@@ -146,31 +167,54 @@ export default function RoomDetailModal({
           <p>
             {done
               ? 'Sua avaliação está salva neste dispositivo.'
-              : 'Antes de concluir, dê uma nota para esta sala.'}
+              : 'Antes de concluir, escolha um rostinho que represente sua visita.'}
           </p>
 
-          <div className="rating big">
-            <div>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  onClick={() => onRatingChange(star)}
-                  aria-label={`${star} estrelas`}
-                >
-                  {star <= (rating || 0) ? '★' : '☆'}
-                </button>
-              ))}
+          <div className="finish-emoji-rating">
+            <div className="emoji-options-grid" role="radiogroup" aria-label="Avaliação da experiência">
+              {RATING_OPTIONS.map((item) => {
+                const isSelected = rating === item.value;
+                return (
+                  <button
+                    key={item.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={isSelected}
+                    className={`emoji-option-btn ${isSelected ? 'active' : ''}`}
+                    onClick={() => onRatingChange(item.value)}
+                    aria-label={`${item.label} (${item.value} de 5)`}
+                  >
+                    <span className="emoji-face">{item.emoji}</span>
+                    <span className="emoji-label">{item.label}</span>
+                  </button>
+                );
+              })}
             </div>
+            {rating ? (
+              <div className="emoji-selected-hint">
+                Sua avaliação: <strong>{getRatingInfo(rating)?.emoji} {getRatingInfo(rating)?.label}</strong>
+              </div>
+            ) : (
+              <div className="emoji-selected-hint empty">
+                Toque em um rostinho para registrar sua avaliação
+              </div>
+            )}
           </div>
 
-          <label>
-            Comentário opcional
+          <div className="comment-block">
+            <label htmlFor="room-comment-input" className="comment-title">
+              Comentário opcional
+            </label>
             <textarea
+              id="room-comment-input"
+              ref={textareaRef}
+              rows={2}
               value={comment || ''}
-              onChange={(e) => onCommentChange(e.target.value)}
+              onInput={handleCommentInput}
+              onChange={handleCommentInput}
               placeholder="Conte o que mais chamou sua atenção..."
             />
-          </label>
+          </div>
 
           <button
             className="finish-button"
@@ -182,5 +226,6 @@ export default function RoomDetailModal({
         </article>
       </div>
     </section>
-  );
+  </div>
+);
 }

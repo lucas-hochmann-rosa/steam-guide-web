@@ -49,7 +49,7 @@ export default function Navbar({
           title="Ver e exportar avaliações das salas"
           style={{ marginLeft: '8px' }}
         >
-          <span>★</span> Avaliações {evaluationsCount > 0 ? `(${evaluationsCount})` : ''}
+          <span>😊</span> Avaliações {evaluationsCount > 0 ? `(${evaluationsCount})` : ''}
         </button>
       </nav>
 
@@ -83,7 +83,7 @@ export default function Navbar({
             }}
             style={{ color: 'var(--blue)', fontWeight: 900 }}
           >
-            ★ Minhas avaliações {evaluationsCount > 0 ? `(${evaluationsCount})` : ''}
+            😊 Minhas avaliações {evaluationsCount > 0 ? `(${evaluationsCount})` : ''}
           </button>
         </nav>
       )}

@@ -9,6 +9,19 @@ const STORAGE_KEYS = {
 
 const STORAGE_VERSION = '2026-09-17-v1';
 
+export const RATING_OPTIONS = [
+  { value: 1, emoji: '🙁', label: 'Ruim' },
+  { value: 2, emoji: '😐', label: 'Regular' },
+  { value: 3, emoji: '🙂', label: 'Boa' },
+  { value: 4, emoji: '😄', label: 'Muito boa' },
+  { value: 5, emoji: '🤩', label: 'Excelente' },
+];
+
+export function getRatingInfo(rating) {
+  const num = Math.round(Number(rating) || 0);
+  return RATING_OPTIONS.find((opt) => opt.value === num) || null;
+}
+
 export function initializeStorage() {
   if (typeof window === 'undefined') return;
 
@@ -158,15 +171,20 @@ export function exportEvaluationsAsCsv() {
     return;
   }
 
-  const headers = ['ID da Sala', 'Nome do Espaço', 'Visitante', 'Nota (1 a 5)', 'Comentário', 'Data e Hora'];
-  const rows = evaluations.map((item) => [
-    `"${item.roomId}"`,
-    `"${(item.roomTitle || '').replace(/"/g, '""')}"`,
-    `"${(item.visitorName || '').replace(/"/g, '""')}"`,
-    item.rating,
-    `"${(item.comment || '').replace(/"/g, '""')}"`,
-    `"${new Date(item.updatedAt).toLocaleString('pt-BR')}"`,
-  ]);
+  const headers = ['ID da Sala', 'Nome do Espaço', 'Visitante', 'Avaliação', 'Nota (1 a 5)', 'Comentário', 'Data e Hora'];
+  const rows = evaluations.map((item) => {
+    const info = getRatingInfo(item.rating);
+    const label = info ? `${info.emoji} ${info.label}` : '';
+    return [
+      `"${item.roomId}"`,
+      `"${(item.roomTitle || '').replace(/"/g, '""')}"`,
+      `"${(item.visitorName || '').replace(/"/g, '""')}"`,
+      `"${label}"`,
+      item.rating,
+      `"${(item.comment || '').replace(/"/g, '""')}"`,
+      `"${new Date(item.updatedAt).toLocaleString('pt-BR')}"`,
+    ];
+  });
 
   const csvContent = '\uFEFF' + [headers.join(';'), ...rows.map((row) => row.join(';'))].join('\r\n');
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });

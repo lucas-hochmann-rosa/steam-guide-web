@@ -12,8 +12,14 @@ export default function WelcomeModal({ onSaveName }) {
   };
 
   return (
-    <div className="welcome-screen" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
-      <section className="welcome-card">
+    <div
+      className="welcome-screen"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="welcome-title"
+      onClick={() => onSaveName(draft.trim() || 'Visitante')}
+    >
+      <section className="welcome-card" onClick={(e) => e.stopPropagation()}>
         <div className="welcome-brands">
           <img
             className="welcome-steam-logo"

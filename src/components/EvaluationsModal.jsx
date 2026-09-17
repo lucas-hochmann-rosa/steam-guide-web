@@ -1,5 +1,5 @@
 import React from 'react';
-import { exportEvaluationsAsCsv, exportEvaluationsAsJson } from '../services/evaluationStorage';
+import { exportEvaluationsAsCsv, exportEvaluationsAsJson, getRatingInfo } from '../services/evaluationStorage';
 
 export default function EvaluationsModal({ isOpen, onClose, evaluations = [], rooms = [] }) {
   if (!isOpen) return null;
@@ -36,8 +36,8 @@ export default function EvaluationsModal({ isOpen, onClose, evaluations = [], ro
               <small>Salas avaliadas</small>
             </div>
             <div>
-              <strong>★ {avgRating}</strong>
-              <small>Média das notas</small>
+              <strong>{avgRating} <span style={{ fontSize: '13px', fontWeight: 600 }}>/ 5.0</span></strong>
+              <small>Média geral</small>
             </div>
             <div>
               <strong>{Math.round((evaluatedCount / totalCount) * 100)}%</strong>
@@ -48,7 +48,7 @@ export default function EvaluationsModal({ isOpen, onClose, evaluations = [], ro
           {evaluations.length === 0 ? (
             <div className="evaluations-empty">
               <p>Nenhuma sala foi avaliada ainda neste dispositivo.</p>
-              <small>Conforme você visitar os espaços e atribuir estrelas, as avaliações serão salvas aqui.</small>
+              <small>Conforme você visitar os espaços e registrar suas impressões, as avaliações serão salvas aqui.</small>
             </div>
           ) : (
             <div className="evaluations-list">
@@ -56,9 +56,15 @@ export default function EvaluationsModal({ isOpen, onClose, evaluations = [], ro
                 <div key={ev.roomId} className="eval-item">
                   <div className="eval-item-head">
                     <h4>{ev.roomTitle || ev.roomId}</h4>
-                    <span className="eval-stars">
-                      {'★'.repeat(ev.rating || 0)}{'☆'.repeat(5 - (ev.rating || 0))}
-                    </span>
+                    {(() => {
+                      const info = getRatingInfo(ev.rating);
+                      return info ? (
+                        <span className="eval-rating-badge">
+                          <span className="badge-emoji">{info.emoji}</span>
+                          <span className="badge-text">{info.label}</span>
+                        </span>
+                      ) : null;
+                    })()}
                   </div>
                   {ev.comment && (
                     <p className="eval-comment">"{ev.comment}"</p>

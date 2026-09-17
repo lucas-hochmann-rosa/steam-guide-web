@@ -18,6 +18,7 @@ import {
   setVisitedRooms,
   getAllEvaluations,
   saveRoomEvaluation,
+  getRatingInfo,
 } from './services/evaluationStorage';
 import { assetPath } from './utils/assetPath';
 
@@ -433,7 +434,7 @@ export default function App() {
                             <span className="visit-status">
                               {done ? (
                                 <span style={{ color: 'var(--green)' }}>
-                                  ✓ Visitada {roomRating ? `(★ ${roomRating})` : ''}
+                                  ✓ Visitada {roomRating && getRatingInfo(roomRating) ? `(${getRatingInfo(roomRating).emoji} ${getRatingInfo(roomRating).label})` : ''}
                                 </span>
                               ) : (
                                 'Não visitada'
@@ -553,14 +554,7 @@ export default function App() {
                     })()}
                   </div>
                   <figcaption>
-                    Toque nas letras para conhecer os blocos ·{' '}
-                    <a
-                      href={assetPath('/assets/mapa-escola-sesi-senai-chapeco.png')}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      abrir mapa completo ↗
-                    </a>
+                    Toque nas letras para abrir os blocos.
                   </figcaption>
                 </figure>
 
